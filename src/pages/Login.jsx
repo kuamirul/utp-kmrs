@@ -36,7 +36,7 @@ const Login = () => {
     <>
       <Card>
         <Card.Body>
-          <h2 className="text-center mb-4">Login</h2>
+          <h2 className="text-center mb-4">UTP Knowledge Management Record System</h2>
           <Form onSubmit={handleSubmit}>
             <Form.Group id="email">
               <Form.Label>Email</Form.Label>
