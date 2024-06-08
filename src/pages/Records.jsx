@@ -6,7 +6,7 @@ import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 
 // components
-import AllRecords from '../components/AllRecords'
+import CaseCard from '../components/CaseCard'
 
 const Records = () => {
   const { user } = useAuth();
@@ -16,7 +16,7 @@ const Records = () => {
     <div className="container-flex" style={{ fontSize: "24px" }}>
       <h3 className="pl-3">UTP Records</h3>
       {fetchError && (<p>{fetchError}</p>)}
-      <AllRecords  />  
+      <CaseCard  />  
     </div>
     
   );

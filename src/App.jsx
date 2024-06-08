@@ -8,8 +8,6 @@ import PasswordReset from "./pages/PasswordReset";
 import Register from "./pages/Register";
 import UpdatePassword from "./pages/UpdatePassword";
 import Records from "./pages/Records";
-import DigitizedRecords from "./pages/DigitizedRecords";
-import DisposedRecords from "./pages/DisposedRecords";
 
 const App = () => {
   return (
@@ -22,8 +20,6 @@ const App = () => {
               <Route path="/" element={<Home />} />
               <Route path="/home" element={<Home />} />
               <Route path="/utp-records" element={<Records />} />
-              <Route path="/digitized-records" element={<DigitizedRecords />} />
-              <Route path="/disposed-records" element={<DisposedRecords />} />
             </Route>
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
