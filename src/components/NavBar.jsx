@@ -52,7 +52,7 @@ const NavBar = () => {
             )}
             {auth && (
               <Nav.Link as={Link} to="/staff-details">
-                Staff Details Forms
+                Staff Details
               </Nav.Link>
             )}
             {auth && (

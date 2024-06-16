@@ -2,17 +2,12 @@ import React, { createContext, useState } from "react";
 import { supabase } from "../supabaseClient";
 
 // Initializing context
-export const ItemsContext = createContext();
+export const UsersContext = createContext();
 
-export function ItemsContextProvider({ children }) {
-  const [allRecords, setAllRecords] = useState([]);
-  const [disposedRecords, setDisposedRecords] = useState([]);
-  const [digitizedRecords, setDigitizedRecords] = useState([]);
-  const [isAllRecords, setIsAllRecords] = useState(false);
-  const [isDigitizedRecords, setIsDigitizedRecords] = useState(false);
-  const [isDisposedRecords, setIsDisposedRecords] = useState(false);
-  const [disposedRecordsCount, setDisposedRecordsCount] = useState(0);
-  const [recordsCount, setRecordsCount] = useState(0);
+export function UsersContextProvider({ children }) {
+  const [allUsers, setAllUsers] = useState([]);
+  const [isAllUsers, setIsAllUsers] = useState(false);
+  const [usersCount, setUsersCount] = useState(0);
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(10);
   const [loading, setLoading] = useState(false);
@@ -28,47 +23,22 @@ export function ItemsContextProvider({ children }) {
     return { from, to }
   }
 
-  const getAllRecords = async () => {
+  const getAllUsers = async () => {
     const { from, to } = getPagination(first, rows);
     setLoading(true);
     try {
 
       const { error, data, count } = await supabase
-        .from('records')
-        .select('id,box_location,box_content,record_title,department,row,status',{ count: 'exact'})
+        .from('profiles')
+        .select('id,full_name,company,job_title,business_phone,email,address',{ count: 'exact'})
         .range(from, to)
         .order("id", { ascending: false });
 
       if (error) throw error;
 
-      if (data) setAllRecords(data);
+      if (data) setAllUsers(data);
 
-      if (count) setRecordsCount(count);
-
-    } catch (error) {
-      alert(error.error_description || error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getDigitizedRecords = async () => {
-    const { from, to } = getPagination(first, rows);
-    setLoading(true);
-    try {
-
-      const { error, data, count } = await supabase
-        .from('records')
-        .select('id,box_location,box_content,record_title,department,row,status',{ count: 'exact'})
-        .eq('status', 'Digitized')
-        .range(from, to)
-        .order("id", { ascending: false });
-
-      if (error) throw error; //check if there was an error fetching the data and move the execution to the catch block
-
-      if (data) setDigitizedRecords(data);
-
-      if (count) setRecordsCount(count);
+      if (count) setUsersCount(count);
 
     } catch (error) {
       alert(error.error_description || error.message);
@@ -77,34 +47,7 @@ export function ItemsContextProvider({ children }) {
     }
   };
 
-  const getDisposedRecords = async () => {
-    const { from, to } = getPagination(first, rows);
-    //console.log("from: ", from, " to: ", to);
-    setLoading(true);
-    try {
-
-      const { error, data, count } = await supabase
-        .from('records')
-        .select('id,box_location,box_content,record_title,department,row,status',{ count: 'exact'})
-        .eq('status', 'Disposed')
-        .range(from, to)
-        .order("id", { ascending: false });
-
-      if (error) throw error; 
-
-      if (data) setDisposedRecords(data);
-
-      if (count) setRecordsCount(count);
-
-    } catch (error) {
-      alert(error.error_description || error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // delete row from the database
-  const deleteRecord = async (id) => {
+  const deleteUser = async (id) => {
     setLoading(true);
     try {
       console.log("id: ", id)
@@ -121,12 +64,11 @@ export function ItemsContextProvider({ children }) {
         query.in("id", idArray); // Multiple ID case
       }
 
-      // Execute the deletion query
       const { error } = await query;
 
       if (error) throw error;
 
-      await getDisposedRecords();
+      await getDisposedUsers();
 
     } catch (error) {
       alert(error.error_description || error.message);
@@ -136,7 +78,7 @@ export function ItemsContextProvider({ children }) {
   };
 
   // add new row to the database
-  const saveRecord = async (record) => {
+  const saveUser = async (record) => {
     setAdding(true);
     try {
       console.log("record before fetch: ", record);
@@ -178,19 +120,6 @@ export function ItemsContextProvider({ children }) {
         if (error) throw error;
       }
 
-      /*console.log("isAllRecords : ", isAllRecords);
-      console.log("isDigitizedRecords : ", isDigitizedRecords);
-      console.log("isDisposedRecords : ", isDisposedRecords);
-
-      if (isAllRecords) {
-        await getAllRecords();
-      } else if (isDigitizedRecords) {
-        await getDigitizedRecords();
-      } else if (isDisposedRecords) {
-        await getDisposedRecords();
-      }*/
-
-
     } catch (error) {
       alert(error.error_description || error.message);
     } finally {
@@ -198,7 +127,7 @@ export function ItemsContextProvider({ children }) {
     }
   };
 
-  const updateRecord = async (record) => {
+  const updateUser = async (record) => {
     setLoading(true);
     try {
 
@@ -217,7 +146,7 @@ export function ItemsContextProvider({ children }) {
 
       if (error) throw error;
 
-      await getDisposedRecords();
+      await getDisposedUsers();
       console.log(record);
 
     } catch (error) {
@@ -228,34 +157,24 @@ export function ItemsContextProvider({ children }) {
   };
 
   return (
-    <ItemsContext.Provider
+    <UsersContext.Provider
       value={{
         loading,
         adding,
-        recordsCount,
-        setRecordsCount,
-        allRecords,
-        isAllRecords,
-        setIsAllRecords,
-        getAllRecords,
-        disposedRecords,
-        isDisposedRecords,
-        setIsDisposedRecords,
-        getDisposedRecords,
-        disposedRecordsCount,
-        setDisposedRecordsCount,
-        digitizedRecords,
-        isDigitizedRecords,
-        setIsDigitizedRecords,
-        getDigitizedRecords,
-        deleteRecord,
-        saveRecord,
-        updateRecord,
+        usersCount,
+        setUsersCount,
+        allUsers,
+        isAllUsers,
+        setIsAllUsers,
+        getAllUsers,
+        deleteUser,
+        saveUser,
+        updateUser,
         setRows, 
         setFirst,
       }}
     >
       {children}
-    </ItemsContext.Provider>
+    </UsersContext.Provider>
   );
 }

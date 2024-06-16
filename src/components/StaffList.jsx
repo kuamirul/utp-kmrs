@@ -16,7 +16,7 @@ import 'primeicons/primeicons.css';
 import { ItemsContext } from "../services/RecordService";
 
 
-export default function AllRecords() {
+export default function StaffList() {
 
   const { getAllRecords, allRecords, recordsCount } = useContext(ItemsContext);
 

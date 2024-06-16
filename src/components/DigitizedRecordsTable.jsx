@@ -18,11 +18,7 @@ import { ItemsContext } from "../services/RecordService";
 
 export default function DigitizedRecordsTable() {
 
-    const { getDigitizedRecords, digitizedRecords, loading } = useContext(ItemsContext);
-
-    useEffect(() => {
-        getDigitizedRecords();
-    }, []);
+    const { getDigitizedRecords, digitizedRecords, recordsCount } = useContext(ItemsContext);
 
     let emptyRecord = {
         id: null,
@@ -82,6 +78,7 @@ export default function DigitizedRecordsTable() {
             setRecord({ ...record });
             setRecordDialog(false);
             setRecord(emptyRecord);
+            window.location.reload();
             /*if (record.record_title.trim()) {
                 let _records = [...records];
                 let _record = { ...record };
@@ -150,17 +147,6 @@ export default function DigitizedRecordsTable() {
         return index;
     };
 
-    const createId = () => {
-        let id = '';
-        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-        for (let i = 0; i < 5; i++) {
-            id += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-
-        return id;
-    };
-
     const exportCSV = () => {
         dt.current.exportCSV();
     };
@@ -217,7 +203,6 @@ export default function DigitizedRecordsTable() {
     const actionBodyTemplate = (rowData) => {
         return (
             <React.Fragment>
-                {/* <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editRecord(rowData)} /> */}
                 <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editRecord(rowData)} />
                 <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteRecord(rowData)} />
             </React.Fragment>
@@ -276,6 +261,75 @@ export default function DigitizedRecordsTable() {
         return <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />;
     };
 
+    const [loading, setLoading] = useState(false);
+    const [totalRecords, setTotalRecords] = useState(0);
+    const [selectAll, setSelectAll] = useState(false);
+    const [lazyState, setlazyState] = useState({
+        first: 0,
+        rows: 10,
+        page: 1,
+        sortField: null,
+        sortOrder: null
+    });
+
+    let networkTimeout = null;
+
+    useEffect(() => {
+        loadLazyData();
+    }, [lazyState]);
+
+    const loadLazyData = () => {
+        setLoading(true);
+
+        if (networkTimeout) {
+            clearTimeout(networkTimeout);
+        }
+
+        getDigitizedRecords({ lazyEvent: JSON.stringify(lazyState) });
+        setTotalRecords(recordsCount);
+        setLoading(false);
+
+    };
+
+    const { setRows, setFirst } = useContext(ItemsContext);
+
+    const onPage = (event) => {
+        setlazyState(event);
+
+        setFirst(event.first);
+        setRows(event.rows);
+    };
+
+    const onSort = (event) => {
+        setlazyState(event);
+    };
+
+    const onFilter = (event) => {
+        event['first'] = 0;
+        setlazyState(event);
+    };
+
+    const onSelectionChange = (event) => {
+        const value = event.value;
+
+        setSelectedCustomers(value);
+        setSelectAll(value.length === totalRecords);
+    };
+
+    const onSelectAllChange = (event) => {
+        const selectAll = event.checked;
+
+        if (selectAll) {
+            CustomerService.getCustomers().then((data) => {
+                setSelectAll(true);
+                setSelectedCustomers(data.customers);
+            });
+        } else {
+            setSelectAll(false);
+            setSelectedCustomers([]);
+        }
+    };
+
     return (
 
         <div>
@@ -283,8 +337,9 @@ export default function DigitizedRecordsTable() {
             <div className="card">
                 <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
-                <DataTable ref={dt} value={digitizedRecords} selection={selectedRecords} onSelectionChange={(e) => setSelectedRecords(e.value)}
-                    dataKey="id" paginator rows={10} rowsPerPageOptions={[5, 10, 25]}
+                <DataTable ref={dt} value={digitizedRecords} dataKey="id" lazy
+                    selection={selectedRecords} onSelectionChange={(e) => setSelectedRecords(e.value)}
+                    paginator rows={10} rowsPerPageOptions={[5, 10, 25]} totalRecords={recordsCount} first={lazyState.first} onPage={onPage}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records" globalFilter={globalFilter} header={header}>
                     <Column selectionMode="multiple" exportable={false}></Column>

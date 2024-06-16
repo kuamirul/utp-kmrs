@@ -2,9 +2,9 @@ import React, { createContext, useState } from "react";
 import { supabase } from "../supabaseClient";
 
 // Initializing context
-export const ItemsContext = createContext();
+export const RequestsContext = createContext();
 
-export function ItemsContextProvider({ children }) {
+export function RequestsContextProvider({ children }) {
   const [allRecords, setAllRecords] = useState([]);
   const [disposedRecords, setDisposedRecords] = useState([]);
   const [digitizedRecords, setDigitizedRecords] = useState([]);
@@ -228,7 +228,7 @@ export function ItemsContextProvider({ children }) {
   };
 
   return (
-    <ItemsContext.Provider
+    <RequestsContext.Provider
       value={{
         loading,
         adding,
@@ -256,6 +256,6 @@ export function ItemsContextProvider({ children }) {
       }}
     >
       {children}
-    </ItemsContext.Provider>
+    </RequestsContext.Provider>
   );
 }
