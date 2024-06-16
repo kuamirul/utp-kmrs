@@ -13,123 +13,123 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import 'primereact/resources/themes/tailwind-light/theme.css';
 import 'primeicons/primeicons.css';
-import { ItemsContext } from "../services/RecordService";
+import { UsersContext } from "../services/UserService";
 
 
 export default function StaffList() {
 
-  const { getAllRecords, allRecords, recordsCount } = useContext(ItemsContext);
+  const { getAllUsers, allUsers, usersCount } = useContext(UsersContext);
 
-  let emptyRecord = {
+  let emptyUser = {
     id: null,
-    record_title: '',
-    box_location: '',
-    department: '',
-    box_content: '',
-    row: '',
+    full_name: '',
+    company: '',
+    job_title: '',
+    business_phone: '',
+    email: '',
     status: ''
   };
 
-  const [records, setRecords] = useState(null);
-  const [recordDialog, setRecordDialog] = useState(false);
-  const [deleteRecordDialog, setDeleteRecordDialog] = useState(false);
-  const [deleteRecordsDialog, setDeleteRecordsDialog] = useState(false);
-  const [record, setRecord] = useState(emptyRecord);
-  const [selectedRecords, setSelectedRecords] = useState(null);
+  const [users, setUsers] = useState(null);
+  const [userDialog, setUserDialog] = useState(false);
+  const [deleteUserDialog, setDeleteUserDialog] = useState(false);
+  const [deleteUsersDialog, setDeleteUsersDialog] = useState(false);
+  const [user, setUser] = useState(emptyUser);
+  const [selectedUsers, setSelectedUsers] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [globalFilter, setGlobalFilter] = useState(null);
   const toast = useRef(null);
   const dt = useRef(null);
 
   const openNew = () => {
-    setRecord(emptyRecord);
+    setUser(emptyUser);
     setSubmitted(false);
-    setRecordDialog(true);
+    setUserDialog(true);
   };
 
   const hideDialog = () => {
     setSubmitted(false);
-    setRecordDialog(false);
+    setUserDialog(false);
   };
 
-  const hideDeleteRecordDialog = () => {
-    setDeleteRecordDialog(false);
+  const hideDeleteUserDialog = () => {
+    setDeleteUserDialog(false);
   };
 
-  const hideDeleteRecordsDialog = () => {
-    setDeleteRecordsDialog(false);
+  const hideDeleteUsersDialog = () => {
+    setDeleteUsersDialog(false);
   };
 
   const [item, setItem] = useState([]);
   const [tab, setTab] = useState("active");
-  const { saveRecord, adding, setIsAllRecords } = useContext(ItemsContext);
+  const { saveUser, adding, setIsAllUsers } = useContext(UsersContext);
 
-  const handleSaveRecord = async (e) => {
+  const handleSaveUser = async (e) => {
     e.preventDefault();
     setSubmitted(true);
-    setIsAllRecords(true);
-    console.log("record on save button click: ", record);
+    setIsAllUsers(true);
+    console.log("user on save button click: ", user);
 
     try {
-      await saveRecord(record);
+      await saveUser(user);
     } catch (err) {
       console.log(err);
     } finally {
-      setRecord({ ...record });
-      setRecordDialog(false);
-      setRecord(emptyRecord);
+      setUser({ ...user });
+      setUserDialog(false);
+      setUser(emptyUser);
       window.location.reload();
-      /*if (record.record_title.trim()) {
-          let _records = [...records];
-          let _record = { ...record };
+      /*if (user.full_name.trim()) {
+          let _users = [...users];
+          let _user = { ...user };
  
-          if (record.id) {
-              const index = findIndexById(record.id);
+          if (user.id) {
+              const index = findIndexById(user.id);
  
-              _records[index] = _record;
-              toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Updated', life: 3000 });
+              _users[index] = _user;
+              toast.current.show({ severity: 'success', summary: 'Successful', detail: 'User Updated', life: 3000 });
           } else {
-              //_record.id = createId();
-              // _record.image = 'record-placeholder.svg';
-              //_records.push(_record);
-              toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Created', life: 3000 });
+              //_user.id = createId();
+              // _user.image = 'user-placeholder.svg';
+              //_users.push(_user);
+              toast.current.show({ severity: 'success', summary: 'Successful', detail: 'User Created', life: 3000 });
           }
  
-          setRecords(_records);
-          setRecordDialog(false);
-          setRecord(emptyRecord);
+          setUsers(_users);
+          setUserDialog(false);
+          setUser(emptyUser);
       }*/
-      toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Updated', life: 3000 });
+      toast.current.show({ severity: 'success', summary: 'Successful', detail: 'User Updated', life: 3000 });
     }
   };
 
-  const editRecord = (record) => {
-    setRecord({ ...record });
-    setRecordDialog(true);
+  const editUser = (user) => {
+    setUser({ ...user });
+    setUserDialog(true);
   };
 
-  const confirmDeleteRecord = (record) => {
-    setRecord(record);
-    setDeleteRecordDialog(true);
+  const confirmDeleteUser = (user) => {
+    setUser(user);
+    setDeleteUserDialog(true);
   };
 
-  const { deleteRecord } = useContext(ItemsContext);
-  const handleDeleteRecord = async (id) => {
-    //let _records = records.filter((val) => val.id !== record.id);
+  const { deleteUser } = useContext(UsersContext);
+  const handleDeleteUser = async (id) => {
+    //let _users = users.filter((val) => val.id !== user.id);
     console.log(id);
     try {
-      await deleteRecord(id);
+      await deleteUser(id);
 
-      setRecord({ ...record });
-      // setRecordDialog(true);
+      setUser({ ...user });
+      // setUserDialog(true);
     } catch (error) {
       console.log(error);
     } finally {
 
-      setRecord({ ...record });
-      setDeleteRecordDialog(false);
-      setRecord(emptyRecord);
-      toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Deleted', life: 3000 });
+      setUser({ ...user });
+      setDeleteUserDialog(false);
+      setUser(emptyUser);
+      toast.current.show({ severity: 'success', summary: 'Successful', detail: 'User Deleted', life: 3000 });
     }
 
   };
@@ -137,8 +137,8 @@ export default function StaffList() {
   const findIndexById = (id) => {
     let index = -1;
 
-    for (let i = 0; i < records.length; i++) {
-      if (records[i].id === id) {
+    for (let i = 0; i < users.length; i++) {
+      if (users[i].id === id) {
         index = i;
         break;
       }
@@ -152,46 +152,46 @@ export default function StaffList() {
   };
 
   const confirmDeleteSelected = () => {
-    setDeleteRecordsDialog(true);
+    setDeleteUsersDialog(true);
   };
 
-  const deleteSelectedRecords = async () => {
+  const deleteSelectedUsers = async () => {
 
-    const idArray = selectedRecords.map(({ id }) => id);
+    const idArray = selectedUsers.map(({ id }) => id);
 
     try {
-      await deleteRecord(idArray);
-      setRecord({ ...record });
-      // setRecordDialog(true);
+      await deleteUser(idArray);
+      setUser({ ...user });
+      // setUserDialog(true);
     } catch (error) {
       console.log(error);
     } finally {
-      setRecord({ ...record });
-      setDeleteRecordsDialog(false);
-      setSelectedRecords(null);
-      toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Records Deleted', life: 3000 });
+      setUser({ ...user });
+      setDeleteUsersDialog(false);
+      setSelectedUsers(null);
+      toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Users Deleted', life: 3000 });
     }
 
   };
 
   const onStatusChange = (e) => {
-    let _record = { ...record };
-    _record['status'] = e.value;
-    setRecord(_record);
+    let _user = { ...user };
+    _user['status'] = e.value;
+    setUser(_user);
   };
 
   const onInputChange = (e, name) => {
     const val = (e.target && e.target.value) || '';
-    let _record = { ...record };
-    _record[`${name}`] = val;
-    setRecord(_record);
+    let _user = { ...user };
+    _user[`${name}`] = val;
+    setUser(_user);
   };
 
   const leftToolbarTemplate = () => {
     return (
       <div className="flex flex-wrap gap-2">
         <Button label="New" icon="pi pi-plus" severity="success" onClick={openNew} />
-        <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedRecords || !selectedRecords.length} />
+        <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedUsers || !selectedUsers.length} />
       </div>
     );
   };
@@ -203,44 +203,15 @@ export default function StaffList() {
   const actionBodyTemplate = (rowData) => {
     return (
       <React.Fragment>
-        <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editRecord(rowData)} />
-        <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteRecord(rowData)} />
+        <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editUser(rowData)} />
+        <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteUser(rowData)} />
       </React.Fragment>
     );
   };
 
-  const [statuses] = useState(['Active', 'Disposed', 'Digitized', 'Inactive', 'KIV']);
-  const [selectedStatus, setSelectedStatus] = useState(null);
-
-  const statusBodyTemplate = (rowData) => {
-    return <Tag value={rowData.status} severity={getStatus(rowData)}></Tag>;
-  };
-
-  const getStatus = (record) => {
-    switch (record.status) {
-      case 'Active':
-        return 'Active';
-
-      case 'Digitized':
-        return 'Digitized';
-
-      case 'Disposed':
-        return 'Disposed';
-
-      case 'Inactive':
-        return 'Inactive';
-
-      case 'KIV':
-        return 'KIV';
-
-      default:
-        return null;
-    }
-  };
-
   const header = (
     <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
-      <h4 className="m-0">Manage Records</h4>
+      <h4 className="m-0">Manage Staffs</h4>
       <IconField iconPosition="left">
         <InputIcon className="pi pi-search" />
         <InputText type="search" onInput={(e) => setGlobalFilter(e.target.value)} placeholder="Search..." />
@@ -249,12 +220,12 @@ export default function StaffList() {
   );
 
   const onRowEditComplete = (e) => {
-    let _records = [...records];
+    let _users = [...users];
     let { newData, index } = e;
 
-    _records[index] = newData;
+    _users[index] = newData;
 
-    setRecords(_records);
+    setUsers(_users);
   };
 
   const textEditor = (options) => {
@@ -262,7 +233,7 @@ export default function StaffList() {
   };
 
   const [loading, setLoading] = useState(false);
-  const [totalRecords, setTotalRecords] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [selectAll, setSelectAll] = useState(false);
   const [lazyState, setlazyState] = useState({
     first: 0,
@@ -285,13 +256,13 @@ export default function StaffList() {
       clearTimeout(networkTimeout);
     }
 
-    getAllRecords({ lazyEvent: JSON.stringify(lazyState) });
-    setTotalRecords(recordsCount);
+    getAllUsers({ lazyEvent: JSON.stringify(lazyState) });
+    setTotalUsers(usersCount);
     setLoading(false);
 
   };
 
-  const { setRows, setFirst } = useContext(ItemsContext);
+  const { setRows, setFirst } = useContext(UsersContext);
 
   const onPage = (event) => {
     setlazyState(event);
@@ -313,7 +284,7 @@ export default function StaffList() {
     const value = event.value;
 
     setSelectedCustomers(value);
-    setSelectAll(value.length === totalRecords);
+    setSelectAll(value.length === totalUsers);
   };
 
   const onSelectAllChange = (event) => {
@@ -337,98 +308,59 @@ export default function StaffList() {
       <div className="card">
         <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
-        <DataTable ref={dt} value={allRecords} dataKey="id" lazy
-          selection={selectedRecords} onSelectionChange={(e) => setSelectedRecords(e.value)}
-          paginator rows={10} rowsPerPageOptions={[5, 10, 25]} totalRecords={recordsCount} first={lazyState.first} onPage={onPage}
+        <DataTable ref={dt} value={allUsers} dataKey="id" lazy
+          selection={selectedUsers} onSelectionChange={(e) => setSelectedUsers(e.value)}
+          paginator rows={10} rowsPerPageOptions={[5, 10, 25]} totalRecords={usersCount} first={lazyState.first} onPage={onPage}
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records" globalFilter={globalFilter} header={header}>
           <Column selectionMode="multiple" exportable={false}></Column>
-          {/* <Column field="id" header="#" sortable ></Column> */}
-          <Column field="record_title" header="Record Title" sortable style={{ minWidth: '16rem' }}></Column>
-          <Column field="box_location" header="Box Location" sortable ></Column>
-          <Column field="department" header="Department" sortable style={{ minWidth: '8rem' }}></Column>
-          <Column field="box_content" header="Box Content" sortable style={{ minWidth: '10rem' }}></Column>
-          <Column field="row" header="Row" sortable style={{ minWidth: '12rem' }}></Column>
-          <Column field="status" header="Status" sortable style={{ minWidth: '12rem' }}></Column>
+          <Column field="full_name" header="Name" sortable style={{ minWidth: '16rem' }}></Column>
+          <Column field="company" header="Company" sortable ></Column>
+          <Column field="job_title" header="Title" sortable style={{ minWidth: '8rem' }}></Column>
+          <Column field="business_phone" header="Phone Number" sortable style={{ minWidth: '10rem' }}></Column>
+          <Column field="email" header="Email" sortable style={{ minWidth: '12rem' }}></Column>
+          <Column field="address" header="Address" sortable style={{ minWidth: '12rem' }}></Column>
           <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '12rem' }}></Column>
           {/*<Column rowEditor={allowEdit} headerStyle={{ width: '10%', minWidth: '8rem' }} bodyStyle={{ textAlign: 'center' }}></Column> */}
         </DataTable>
 
       </div>
 
-      <Dialog visible={recordDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Record Details" modal className="p-fluid" onHide={hideDialog}>
-        {/* {record.image && <img src={`https://primefaces.org/cdn/primereact/images/record/${record.image}`} alt={record.image} className="record-image block m-auto pb-3" />} */}
-        <form onSubmit={handleSaveRecord} >
+      <Dialog visible={userDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="User Details" modal className="p-fluid" onHide={hideDialog}>
+        {/* {user.image && <img src={`https://primefaces.org/cdn/primereact/images/user/${user.image}`} alt={user.image} className="user-image block m-auto pb-3" />} */}
+        <form onSubmit={handleSaveUser} >
           <div className="field">
-            <label htmlFor="name" className="font-bold">Record Title</label>
-            <InputText id="record_title" value={record.record_title} onChange={(e) => onInputChange(e, 'record_title')} required autoFocus className={classNames({ 'p-invalid': submitted && !record.record_title })} />
-            {submitted && !record.record_title && <small className="p-error">Record Title is required.</small>}
+            <label htmlFor="name" className="font-bold">User Title</label>
+            <InputText id="full_name" value={user.full_name} onChange={(e) => onInputChange(e, 'full_name')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.full_name })} />
+            {submitted && !user.full_name && <small className="p-error">User Title is required.</small>}
           </div>
 
           <div className="field">
-            <label htmlFor="box_location" className="font-bold">Box Location</label>
-            <InputText id="box_location" value={record.box_location} onChange={(e) => onInputChange(e, 'box_location')} required autoFocus className={classNames({ 'p-invalid': submitted && !record.box_location })} />
+            <label htmlFor="company" className="font-bold">Box Location</label>
+            <InputText id="company" value={user.company} onChange={(e) => onInputChange(e, 'company')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.company })} />
           </div>
 
           <div className="field">
-            <label htmlFor="department" className="font-bold">Department</label>
-            <InputText id="department" value={record.department} onChange={(e) => onInputChange(e, 'department')} required autoFocus className={classNames({ 'p-invalid': submitted && !record.department })} />
+            <label htmlFor="job_title" className="font-bold">Department</label>
+            <InputText id="job_title" value={user.job_title} onChange={(e) => onInputChange(e, 'job_title')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.job_title })} />
           </div>
 
           <div className="field">
-            <label htmlFor="box_content" className="font-bold">Box Content</label>
-            <InputText id="box_content" value={record.box_content} onChange={(e) => onInputChange(e, 'box_content')} required autoFocus className={classNames({ 'p-invalid': submitted && !record.box_content })} />
+            <label htmlFor="business_phone" className="font-bold">Box Content</label>
+            <InputText id="business_phone" value={user.business_phone} onChange={(e) => onInputChange(e, 'business_phone')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.business_phone })} />
           </div>
 
           <div className="field">
-            <label htmlFor="row" className="font-bold">Row</label>
-            <InputText id="row" value={record.row} onChange={(e) => onInputChange(e, 'row')} required autoFocus className={classNames({ 'p-invalid': submitted && !record.row })} />
+            <label htmlFor="email" className="font-bold">Row</label>
+            <InputText id="email" value={user.email} onChange={(e) => onInputChange(e, 'email')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.email })} />
           </div>
 
           <div className="field">
-            <label className="mb-3 font-bold">Status</label>
-            <div className="formgrid grid">
-              <div className="field-radiobutton col-6">
-                <RadioButton inputId="category1" name="category" value="Active" onChange={onStatusChange} checked={record.status === 'Active'} />
-                <label htmlFor="category1">Active</label>
-              </div>
-              <div className="field-radiobutton col-6">
-                <RadioButton inputId="category2" name="category" value="Digitized" onChange={onStatusChange} checked={record.status === 'Digitized'} />
-                <label htmlFor="category2">Digitized</label>
-              </div>
-              <div className="field-radiobutton col-6">
-                <RadioButton inputId="category3" name="category" value="Disposed" onChange={onStatusChange} checked={record.status === 'Disposed'} />
-                <label htmlFor="category3">Disposed</label>
-              </div>
-              <div className="field-radiobutton col-6">
-                <RadioButton inputId="category4" name="category" value="Inactive" onChange={onStatusChange} checked={record.status === 'Inactive'} />
-                <label htmlFor="category4">Inactive</label>
-              </div>
-              <div className="field-radiobutton col-6">
-                <RadioButton inputId="category4" name="category" value="KIV" onChange={onStatusChange} checked={record.status === 'KIV'} />
-                <label htmlFor="category4">KIV</label>
-              </div>
-            </div>
+            <label htmlFor="address" className="font-bold">Row</label>
+            <InputText id="address" value={user.address} onChange={(e) => onInputChange(e, 'address')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.address })} />
           </div>
-
-          {/* <div className="field">
-                    <label className="mb-3 font-bold">Status</label>
-                        <div className="formgrid grid">
-                        <Dropdown
-                            value={getStatus(record.status)}
-                            options={statuses}
-                            //onChange={(e) => record.editorCallback(e.value)}
-                            onChange={(e) => setSelectedStatus(e.value)}
-                            placeholder="Select a Status"
-                            itemTemplate={(record) => {
-                                return <Tag value={record} severity={getStatus(record)}></Tag>;
-                            }}
-                        />
-                        </div>
-                    </div> */}
 
           <div className="p-dialog-footer pb-0">
-            {/* <Button label="Submit" type="submit" className="p-button-rounded p-button-success mr-2 mb-2" /> */}
             <Button label="Cancel" type="button" icon="pi pi-times" outlined onClick={hideDialog} />
             <Button label="Save" type="submit" icon="pi pi-check" />
           </div>
@@ -436,32 +368,31 @@ export default function StaffList() {
         </form>
       </Dialog>
 
-      {/* <Dialog visible={deleteRecordDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteRecordDialogFooter} onHide={hideDeleteRecordDialog}> */}
-      <Dialog visible={deleteRecordDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal onHide={hideDeleteRecordDialog}>
+     <Dialog visible={deleteUserDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal onHide={hideDeleteUserDialog}>
         <div className="confirmation-content">
           <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-          {record && (
+          {user && (
             <span>
-              Are you sure you want to delete <b>{record.record_title}</b>?
+              Are you sure you want to delete <b>{user.full_name}</b>?
             </span>
           )}
         </div>
         <div className="p-dialog-footer pb-0">
-          <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteRecordDialog} />
-          <Button label="Yes" icon="pi pi-check" severity="danger" onClick={() => handleDeleteRecord(record.id)} />
-          {/* <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteRecord} /> */}
+          <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteUserDialog} />
+          <Button label="Yes" icon="pi pi-check" severity="danger" onClick={() => handleDeleteUser(user.id)} />
+          {/* <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteUser} /> */}
         </div>
       </Dialog>
 
-      {/* <Dialog visible={deleteRecordsDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteRecordsDialogFooter} onHide={hideDeleteRecordsDialog}> */}
-      <Dialog visible={deleteRecordsDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal onHide={hideDeleteRecordsDialog}>
+      {/* <Dialog visible={deleteUsersDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteUsersDialogFooter} onHide={hideDeleteUsersDialog}> */}
+      <Dialog visible={deleteUsersDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal onHide={hideDeleteUsersDialog}>
         <div className="confirmation-content">
           <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-          {record && <span>Are you sure you want to delete the {selectedRecords?.length} selected records?</span>}
+          {user && <span>Are you sure you want to delete the {selectedUsers?.length} selected users?</span>}
         </div>
         <div className="p-dialog-footer pb-0">
-          <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteRecordsDialog} />
-          <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteSelectedRecords} />
+          <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteUsersDialog} />
+          <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteSelectedUsers} />
         </div>
       </Dialog>
     </div>
