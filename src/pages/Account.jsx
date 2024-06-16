@@ -3,24 +3,27 @@ import { useAuth } from "../context/AuthProvider";
 import 'primereact/resources/themes/tailwind-light/theme.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
+import { Card } from 'primereact/card';
 import { Panel } from 'primereact/panel';
-// components
-import DigitizedRecordsTable from '../components/DigitizedRecordsTable'
 
-const DigitizedRecords = () => {
+// components
+import UserProfile from '../components/UserProfile'
+
+const Account = () => {
   const { user } = useAuth();
   const [fetchError, setFetchError] = React.useState(null);
 
   return (
     <Panel>
       <div className="container-flex" style={{ fontSize: "24px" }}>
-        <h3 className="pl-3">Digitized Records</h3>
+        <h3 className="pl-3">User Details</h3>
         {fetchError && (<p>{fetchError}</p>)}
-        <DigitizedRecordsTable />
+        <UserProfile />
       </div>
     </Panel>
+
 
   );
 };
 
-export default DigitizedRecords;
+export default Account;

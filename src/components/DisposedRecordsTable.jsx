@@ -11,6 +11,7 @@ import { InputIcon } from 'primereact/inputicon';
 import { RadioButton } from 'primereact/radiobutton';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
+import { Paginator } from 'primereact/paginator';
 import { Tag } from 'primereact/tag';
 import 'primereact/resources/themes/tailwind-light/theme.css';
 import 'primeicons/primeicons.css';
@@ -20,17 +21,17 @@ import { ItemsContext } from "../services/RecordService";
 //const DisposedRecordsTable = () => {
 export default function DisposedRecordsTable() {
 
-    const { getDisposedRecords, disposedRecords, loading } = useContext(ItemsContext);
+    const { getDisposedRecords, disposedRecords, recordsCount } = useContext(ItemsContext);
     //const [openModal, setOpenModal] = React.useState(false);
     //const [data, _setData] = React.useState(() => [...record])
     //const rerender = React.useReducer(() => ({}), {})[1]
     //const [fetchError, setFetchError] = React.useState(null);
     //const [records, setCases] = useState([]);
 
-    useEffect(() => {
-        getDisposedRecords();
-        //console.log('getRecords data:', { disposedRecords }, typeof { disposedRecords });
-    }, []);
+    // useEffect(() => {
+    //     getDisposedRecords();
+    //     //console.log('getRecords data:', { disposedRecords }, typeof { disposedRecords });
+    // }, []);
 
     let emptyRecord = {
         id: null,
@@ -120,6 +121,7 @@ export default function DisposedRecordsTable() {
             setRecord({ ...record });
             setRecordDialog(false);
             setRecord(emptyRecord);
+            window.location.reload();
             /*if (record.record_title.trim()) {
                 let _records = [...records];
                 let _record = { ...record };
@@ -173,30 +175,6 @@ export default function DisposedRecordsTable() {
             toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Deleted', life: 3000 });
         }
 
-    };
-
-    const findIndexById = (id) => {
-        let index = -1;
-
-        for (let i = 0; i < records.length; i++) {
-            if (records[i].id === id) {
-                index = i;
-                break;
-            }
-        }
-
-        return index;
-    };
-
-    const createId = () => {
-        let id = '';
-        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-        for (let i = 0; i < 5; i++) {
-            id += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-
-        return id;
     };
 
     const exportCSV = () => {
@@ -299,6 +277,75 @@ export default function DisposedRecordsTable() {
         );
     };*/
 
+    const [loading, setLoading] = useState(false);
+    const [totalRecords, setTotalRecords] = useState(0);
+    const [selectAll, setSelectAll] = useState(false);
+    const [lazyState, setlazyState] = useState({
+        first: 0,
+        rows: 10,
+        page: 1,
+        sortField: null,
+        sortOrder: null
+    });
+
+    let networkTimeout = null;
+
+    useEffect(() => {
+        loadLazyData();
+    }, [lazyState]);
+
+    const loadLazyData = () => {
+        setLoading(true);
+
+        if (networkTimeout) {
+            clearTimeout(networkTimeout);
+        }
+
+        getDisposedRecords({ lazyEvent: JSON.stringify(lazyState) });
+        setTotalRecords(recordsCount);
+        setLoading(false);
+
+    };
+
+    const { setRows, setFirst } = useContext(ItemsContext);
+
+    const onPage = (event) => {
+        setlazyState(event);
+
+        setFirst(event.first);
+        setRows(event.rows);
+    };
+
+    const onSort = (event) => {
+        setlazyState(event);
+    };
+
+    const onFilter = (event) => {
+        event['first'] = 0;
+        setlazyState(event);
+    };
+
+    const onSelectionChange = (event) => {
+        const value = event.value;
+
+        setSelectedCustomers(value);
+        setSelectAll(value.length === totalRecords);
+    };
+
+    const onSelectAllChange = (event) => {
+        const selectAll = event.checked;
+
+        if (selectAll) {
+            CustomerService.getCustomers().then((data) => {
+                setSelectAll(true);
+                setSelectedCustomers(data.customers);
+            });
+        } else {
+            setSelectAll(false);
+            setSelectedCustomers([]);
+        }
+    };
+
 
     return (
 
@@ -307,10 +354,19 @@ export default function DisposedRecordsTable() {
             <div className="card">
                 <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
-                <DataTable ref={dt} value={disposedRecords} selection={selectedRecords} onSelectionChange={(e) => setSelectedRecords(e.value)}
-                    dataKey="id" paginator rows={10} rowsPerPageOptions={[5, 10, 25]}
+                <DataTable ref={dt} value={disposedRecords} dataKey="id" lazy 
+                    selection={selectedRecords} onSelectionChange={(e) => setSelectedRecords(e.value)}
+                    paginator rows={10} rowsPerPageOptions={[5, 10, 25]} totalRecords={recordsCount} first={lazyState.first} onPage={onPage} 
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records" globalFilter={globalFilter} header={header}>
+
+                    {/* value={customers} lazy filterDisplay="row" dataKey="id" paginator
+                    first={lazyState.first} rows={10} totalRecords={totalRecords} onPage={onPage}
+                    onSort={onSort} sortField={lazyState.sortField} sortOrder={lazyState.sortOrder}
+                    onFilter={onFilter} filters={lazyState.filters} loading={loading} tableStyle={{ minWidth: '75rem' }}
+                    selection={selectedCustomers} onSelectionChange={onSelectionChange} selectAll={selectAll} onSelectAllChange={onSelectAllChange} */}
+
+
                     <Column selectionMode="multiple" exportable={false}></Column>
                     {/* <Column field="id" header="#" sortable ></Column> */}
                     <Column field="record_title" header="Record Title" sortable style={{ minWidth: '16rem' }}></Column>
