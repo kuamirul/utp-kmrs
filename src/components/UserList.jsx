@@ -78,7 +78,7 @@ export default function UserList() {
       setUser({ ...user });
       setUserDialog(false);
       setUser(emptyUser);
-      window.location.reload();
+      //window.location.reload();
       /*if (user.full_name.trim()) {
           let _users = [...users];
           let _user = { ...user };
@@ -308,9 +308,9 @@ export default function UserList() {
       <div className="card">
         <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
-        <DataTable ref={dt} value={allUsers} dataKey="id" lazy
+        <DataTable ref={dt} value={allUsers} dataKey="id"
           selection={selectedUsers} onSelectionChange={(e) => setSelectedUsers(e.value)}
-          paginator rows={10} rowsPerPageOptions={[5, 10, 25]} totalRecords={usersCount} first={lazyState.first} onPage={onPage}
+          paginator rows={10} rowsPerPageOptions={[5, 10, 25]}
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records" globalFilter={globalFilter} header={header}>
           <Column selectionMode="multiple" exportable={false}></Column>
@@ -330,34 +330,34 @@ export default function UserList() {
         {/* {user.image && <img src={`https://primefaces.org/cdn/primereact/images/user/${user.image}`} alt={user.image} className="user-image block m-auto pb-3" />} */}
         <form onSubmit={handleSaveUser} >
           <div className="field">
-            <label htmlFor="name" className="font-bold">User Title</label>
+            <label htmlFor="name" className="font-bold">Name</label>
             <InputText id="full_name" value={user.full_name} onChange={(e) => onInputChange(e, 'full_name')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.full_name })} />
             {submitted && !user.full_name && <small className="p-error">User Title is required.</small>}
           </div>
 
           <div className="field">
-            <label htmlFor="company" className="font-bold">Box Location</label>
-            <InputText id="company" value={user.company} onChange={(e) => onInputChange(e, 'company')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.company })} />
+            <label htmlFor="company" className="font-bold">Company</label>
+            <InputText id="company" value={user.company} onChange={(e) => onInputChange(e, 'company')} autoFocus className={classNames({ 'p-invalid': submitted && !user.company })} />
           </div>
 
           <div className="field">
-            <label htmlFor="job_title" className="font-bold">Department</label>
-            <InputText id="job_title" value={user.job_title} onChange={(e) => onInputChange(e, 'job_title')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.job_title })} />
+            <label htmlFor="job_title" className="font-bold">Position</label>
+            <InputText id="job_title" value={user.job_title} onChange={(e) => onInputChange(e, 'job_title')} autoFocus className={classNames({ 'p-invalid': submitted && !user.job_title })} />
           </div>
 
           <div className="field">
-            <label htmlFor="business_phone" className="font-bold">Box Content</label>
-            <InputText id="business_phone" value={user.business_phone} onChange={(e) => onInputChange(e, 'business_phone')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.business_phone })} />
+            <label htmlFor="business_phone" className="font-bold">Phone Number</label>
+            <InputText id="business_phone" value={user.business_phone} onChange={(e) => onInputChange(e, 'business_phone')} autoFocus className={classNames({ 'p-invalid': submitted && !user.business_phone })} />
           </div>
 
           <div className="field">
-            <label htmlFor="email" className="font-bold">Row</label>
-            <InputText id="email" value={user.email} onChange={(e) => onInputChange(e, 'email')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.email })} />
+            <label htmlFor="email" className="font-bold">Email</label>
+            <InputText id="email" value={user.email} onChange={(e) => onInputChange(e, 'email')} disabled autoFocus className={classNames({ 'p-invalid': submitted && !user.email })} />
           </div>
 
           <div className="field">
-            <label htmlFor="address" className="font-bold">Row</label>
-            <InputText id="address" value={user.address} onChange={(e) => onInputChange(e, 'address')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.address })} />
+            <label htmlFor="address" className="font-bold">Address</label>
+            <InputText id="address" value={user.address} onChange={(e) => onInputChange(e, 'address')} autoFocus className={classNames({ 'p-invalid': submitted && !user.address })} />
           </div>
 
           <div className="p-dialog-footer pb-0">
@@ -368,7 +368,7 @@ export default function UserList() {
         </form>
       </Dialog>
 
-     <Dialog visible={deleteUserDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal onHide={hideDeleteUserDialog}>
+      <Dialog visible={deleteUserDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal onHide={hideDeleteUserDialog}>
         <div className="confirmation-content">
           <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
           {user && (

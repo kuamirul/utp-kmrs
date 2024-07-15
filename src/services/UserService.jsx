@@ -31,7 +31,6 @@ export function UsersContextProvider({ children }) {
       const { error, data, count } = await supabase
         .from('profiles')
         .select('id,full_name,company,job_title,business_phone,email,address',{ count: 'exact'})
-        .range(from, to)
         .order("id", { ascending: false });
 
       if (error) throw error;
@@ -78,41 +77,41 @@ export function UsersContextProvider({ children }) {
   };
 
   // add new row to the database
-  const saveUser = async (record) => {
+  const saveUser = async (user) => {
     setAdding(true);
     try {
-      console.log("record before fetch: ", record);
-
-      if ((record.id) && (record.id != null)) {
-        console.log("Calling update query");
+      console.log("user before fetch: ", user);
+      //.select('id,full_name,company,job_title,business_phone,email,address',{ count: 'exact'})
+      if ((user.id) && (user.id != null)) {
+        console.log("Calling update query", user);
         const { error } = await supabase
-          .from("records")
+          .from("profiles")
           .update([
             {
-              box_location: record.box_location,
-              box_content: record.box_content,
-              record_title: record.record_title,
-              department: record.department,
-              row: record.row,
-              status: record.status
+              full_name: user.full_name,
+              company: user.company,
+              job_title: user.job_title,
+              business_phone: user.business_phone,
+              email: user.email,
+              address: user.address
             },
           ])
-          .eq('id', record.id)
+          .eq('id', user.id)
           .select()
 
         if (error) throw error;
       } else {
         console.log("Calling insert query");
         const { error } = await supabase
-          .from("records")
+          .from("profiles")
           .insert([
             {
-              box_location: record.box_location,
-              box_content: record.box_content,
-              record_title: record.record_title,
-              department: record.department,
-              row: record.row,
-              status: record.status
+              full_name: user.full_name,
+              company: user.company,
+              job_title: user.job_title,
+              business_phone: user.business_phone,
+              email: user.email,
+              address: user.address
             },
           ])
           .select()
@@ -120,39 +119,14 @@ export function UsersContextProvider({ children }) {
         if (error) throw error;
       }
 
+      //console.log("isAllRecords : ", isAllRecords);
+
+      await getAllUsers();
+
     } catch (error) {
       alert(error.error_description || error.message);
     } finally {
       setAdding(false);
-    }
-  };
-
-  const updateUser = async (record) => {
-    setLoading(true);
-    try {
-
-      const { error } = await supabase
-        .from("records")
-        //.update({ item })
-        .update({
-          box_location: record.box_location,
-          box_content: record.box_content,
-          record_title: record.record_title,
-          department: record.department,
-          row: record.row,
-          status: record.status
-        })
-        .eq("id", record.id); //matching id of row to update
-
-      if (error) throw error;
-
-      await getDisposedUsers();
-      console.log(record);
-
-    } catch (error) {
-      alert(error.error_description || error.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -169,7 +143,6 @@ export function UsersContextProvider({ children }) {
         getAllUsers,
         deleteUser,
         saveUser,
-        updateUser,
         setRows, 
         setFirst,
       }}

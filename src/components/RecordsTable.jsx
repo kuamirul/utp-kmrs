@@ -16,9 +16,9 @@ import 'primeicons/primeicons.css';
 import { ItemsContext } from "../services/RecordService";
 
 
-export default function AllRecords() {
+export default function recordsTable({ recordType }) {
 
-  const { getAllRecords, allRecords, recordsCount } = useContext(ItemsContext);
+  const { getRecords, recordsList, recordsCount, setRecordType } = useContext(ItemsContext);
 
   let emptyRecord = {
     id: null,
@@ -62,12 +62,11 @@ export default function AllRecords() {
 
   const [item, setItem] = useState([]);
   const [tab, setTab] = useState("active");
-  const { saveRecord, adding, setIsAllRecords } = useContext(ItemsContext);
+  const { saveRecord, adding } = useContext(ItemsContext);
 
   const handleSaveRecord = async (e) => {
     e.preventDefault();
     setSubmitted(true);
-    setIsAllRecords(true);
     console.log("record on save button click: ", record);
 
     try {
@@ -78,28 +77,13 @@ export default function AllRecords() {
       setRecord({ ...record });
       setRecordDialog(false);
       setRecord(emptyRecord);
-      window.location.reload();
-      /*if (record.record_title.trim()) {
-          let _records = [...records];
-          let _record = { ...record };
- 
-          if (record.id) {
-              const index = findIndexById(record.id);
- 
-              _records[index] = _record;
-              toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Updated', life: 3000 });
-          } else {
-              //_record.id = createId();
-              // _record.image = 'record-placeholder.svg';
-              //_records.push(_record);
-              toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Created', life: 3000 });
-          }
- 
-          setRecords(_records);
-          setRecordDialog(false);
-          setRecord(emptyRecord);
-      }*/
-      toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Updated', life: 3000 });
+
+      if (record.id) {
+        toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Updated', life: 3000 });
+      } else {
+        toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Created', life: 3000 });
+      }
+
     }
   };
 
@@ -241,10 +225,10 @@ export default function AllRecords() {
   const header = (
     <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
       <h4 className="m-0">Manage Records</h4>
-      <IconField iconPosition="left">
+      {/* <IconField iconPosition="left">
         <InputIcon className="pi pi-search" />
         <InputText type="search" onInput={(e) => setGlobalFilter(e.target.value)} placeholder="Search..." />
-      </IconField>
+      </IconField> */}
     </div>
   );
 
@@ -261,6 +245,8 @@ export default function AllRecords() {
     return <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />;
   };
 
+
+  // https://stackblitz.com/run?file=src%2Fservice%2FCustomerService.jsx,src%2FApp.jsx
   const [loading, setLoading] = useState(false);
   const [totalRecords, setTotalRecords] = useState(0);
   const [selectAll, setSelectAll] = useState(false);
@@ -269,12 +255,21 @@ export default function AllRecords() {
     rows: 10,
     page: 1,
     sortField: null,
-    sortOrder: null
+    sortOrder: null,
+    filters: {
+      record_title: { value: '', matchMode: 'contains' },
+      box_location: { value: '', matchMode: 'contains' },
+      department: { value: '', matchMode: 'contains' },
+      box_content: { value: '', matchMode: 'contains' },
+      row: { value: '', matchMode: 'contains' },
+      status: { value: '', matchMode: 'contains' }
+    }
   });
 
   let networkTimeout = null;
 
   useEffect(() => {
+    setRecordType(recordType);
     loadLazyData();
   }, [lazyState]);
 
@@ -284,8 +279,8 @@ export default function AllRecords() {
     if (networkTimeout) {
       clearTimeout(networkTimeout);
     }
-
-    getAllRecords({ lazyEvent: JSON.stringify(lazyState) });
+    // TODO EXPORT CONST RECORD FROM SERVICE
+    getRecords(recordType, { lazyEvent: JSON.stringify(lazyState) });
     setTotalRecords(recordsCount);
     setLoading(false);
 
@@ -337,22 +332,32 @@ export default function AllRecords() {
       <div className="card">
         <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
-        <DataTable ref={dt} value={allRecords} dataKey="id" lazy
+        <DataTable 
+          ref={dt} value={recordsList} dataKey="id" lazy
           selection={selectedRecords} onSelectionChange={(e) => setSelectedRecords(e.value)}
           paginator rows={10} rowsPerPageOptions={[5, 10, 25]} totalRecords={recordsCount} first={lazyState.first} onPage={onPage}
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records" globalFilter={globalFilter} header={header}>
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records" 
+          onFilter={onFilter} filters={lazyState.filters}  filterDisplay="row" 
+          header={header}>
           <Column selectionMode="multiple" exportable={false}></Column>
           {/* <Column field="id" header="#" sortable ></Column> */}
-          <Column field="record_title" header="Record Title" sortable style={{ minWidth: '16rem' }}></Column>
-          <Column field="box_location" header="Box Location" sortable ></Column>
-          <Column field="department" header="Department" sortable style={{ minWidth: '8rem' }}></Column>
-          <Column field="box_content" header="Box Content" sortable style={{ minWidth: '10rem' }}></Column>
-          <Column field="row" header="Row" sortable style={{ minWidth: '12rem' }}></Column>
-          <Column field="status" header="Status" sortable style={{ minWidth: '12rem' }}></Column>
+          <Column field="record_title" header="Record Title" sortable filter filterPlaceholder="Search" style={{ minWidth: '16rem' }}></Column>
+          <Column field="box_location" header="Box Location" filter filterPlaceholder="Search" sortable ></Column>
+          <Column field="department" header="Department" sortable filter filterPlaceholder="Search" style={{ minWidth: '8rem' }}></Column>
+          <Column field="box_content" header="Box Content" sortable filter filterPlaceholder="Search" style={{ minWidth: '10rem' }}></Column>
+          <Column field="row" header="Row" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="status" header="Status" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
           <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '12rem' }}></Column>
           {/*<Column rowEditor={allowEdit} headerStyle={{ width: '10%', minWidth: '8rem' }} bodyStyle={{ textAlign: 'center' }}></Column> */}
         </DataTable>
+
+        {/* https://primereact.org/datatable/#lazy_load */}
+        {/* value={customers} lazy filterDisplay="row" dataKey="id" paginator
+            first={lazyState.first} rows={10} totalRecords={totalRecords} onPage={onPage}
+            onSort={onSort} sortField={lazyState.sortField} sortOrder={lazyState.sortOrder}
+            onFilter={onFilter} filters={lazyState.filters} loading={loading} tableStyle={{ minWidth: '75rem' }}
+            selection={selectedCustomers} onSelectionChange={onSelectionChange} selectAll={selectAll} onSelectAllChange={onSelectAllChange} */}
 
       </div>
 

@@ -1,22 +1,18 @@
 import React, { createContext, useState } from "react";
 import { supabase } from "../supabaseClient";
+// import { requestType} from '../components/RecordsTable';
 
 // Initializing context
 export const RequestsContext = createContext();
 
 export function RequestsContextProvider({ children }) {
-  const [allRecords, setAllRecords] = useState([]);
-  const [disposedRecords, setDisposedRecords] = useState([]);
-  const [digitizedRecords, setDigitizedRecords] = useState([]);
-  const [isAllRecords, setIsAllRecords] = useState(false);
-  const [isDigitizedRecords, setIsDigitizedRecords] = useState(false);
-  const [isDisposedRecords, setIsDisposedRecords] = useState(false);
-  const [disposedRecordsCount, setDisposedRecordsCount] = useState(0);
-  const [recordsCount, setRecordsCount] = useState(0);
+  const [requestsList, setRequests] = useState([]);
+  const [requestsCount, setRequestsCount] = useState(0);
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(10);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [requestType, setRequestType] = useState("");
 
   // https://github.com/orgs/supabase/discussions/1223
   const getPagination = (page, size) => {
@@ -28,73 +24,26 @@ export function RequestsContextProvider({ children }) {
     return { from, to }
   }
 
-  const getAllRecords = async () => {
+  const getRequests = async (requestType) => {
     const { from, to } = getPagination(first, rows);
     setLoading(true);
     try {
 
-      const { error, data, count } = await supabase
-        .from('records')
-        .select('id,box_location,box_content,record_title,department,row,status',{ count: 'exact'})
-        .range(from, to)
-        .order("id", { ascending: false });
+      let query = supabase
+        .from('requests')
+        .select('id,title,records_description,customer,assigned_to,department,priority,status,category,due_date', { count: 'exact' });
+
+      query = query.range(from, to);
+      query = query.order("id", { ascending: false });
+
+
+      const { error, data, count } = await query
 
       if (error) throw error;
 
-      if (data) setAllRecords(data);
+      if (data) setRequests(data);
 
-      if (count) setRecordsCount(count);
-
-    } catch (error) {
-      alert(error.error_description || error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getDigitizedRecords = async () => {
-    const { from, to } = getPagination(first, rows);
-    setLoading(true);
-    try {
-
-      const { error, data, count } = await supabase
-        .from('records')
-        .select('id,box_location,box_content,record_title,department,row,status',{ count: 'exact'})
-        .eq('status', 'Digitized')
-        .range(from, to)
-        .order("id", { ascending: false });
-
-      if (error) throw error; //check if there was an error fetching the data and move the execution to the catch block
-
-      if (data) setDigitizedRecords(data);
-
-      if (count) setRecordsCount(count);
-
-    } catch (error) {
-      alert(error.error_description || error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getDisposedRecords = async () => {
-    const { from, to } = getPagination(first, rows);
-    //console.log("from: ", from, " to: ", to);
-    setLoading(true);
-    try {
-
-      const { error, data, count } = await supabase
-        .from('records')
-        .select('id,box_location,box_content,record_title,department,row,status',{ count: 'exact'})
-        .eq('status', 'Disposed')
-        .range(from, to)
-        .order("id", { ascending: false });
-
-      if (error) throw error; 
-
-      if (data) setDisposedRecords(data);
-
-      if (count) setRecordsCount(count);
+      if (count) setRequestsCount(count);
 
     } catch (error) {
       alert(error.error_description || error.message);
@@ -104,7 +53,7 @@ export function RequestsContextProvider({ children }) {
   };
 
   // delete row from the database
-  const deleteRecord = async (id) => {
+  const deleteRequest = async (id) => {
     setLoading(true);
     try {
       console.log("id: ", id)
@@ -112,7 +61,7 @@ export function RequestsContextProvider({ children }) {
       const idArray = Array.isArray(id) ? id : [id]; // Convert to array if necessary
 
       const query = supabase
-        .from("records")
+        .from("requests")
         .delete();
       // Add the ID filter(s) dynamically based on the array size
       if (idArray.length === 1) {
@@ -126,7 +75,7 @@ export function RequestsContextProvider({ children }) {
 
       if (error) throw error;
 
-      await getDisposedRecords();
+      await getRequests(requestType);
 
     } catch (error) {
       alert(error.error_description || error.message);
@@ -136,41 +85,47 @@ export function RequestsContextProvider({ children }) {
   };
 
   // add new row to the database
-  const saveRecord = async (record) => {
+  const saveRequest = async (request) => {
     setAdding(true);
     try {
-      console.log("record before fetch: ", record);
+      console.log("request before fetch: ", request);
 
-      if ((record.id) && (record.id != null)) {
+      if ((request.id) && (request.id != null)) {
         console.log("Calling update query");
         const { error } = await supabase
-          .from("records")
+          .from("requests")
           .update([
             {
-              box_location: record.box_location,
-              box_content: record.box_content,
-              record_title: record.record_title,
-              department: record.department,
-              row: record.row,
-              status: record.status
+              title: request.title,
+              records_description: request.records_description,
+              customer: request.customer,
+              assigned_to: request.assigned_to,
+              department: request.department,
+              priority: request.priority,
+              status: request.status,
+              category: request.category,
+              due_date: request.due_date
             },
           ])
-          .eq('id', record.id)
+          .eq('id', request.id)
           .select()
 
         if (error) throw error;
       } else {
         console.log("Calling insert query");
         const { error } = await supabase
-          .from("records")
+          .from("requests")
           .insert([
             {
-              box_location: record.box_location,
-              box_content: record.box_content,
-              record_title: record.record_title,
-              department: record.department,
-              row: record.row,
-              status: record.status
+              title: request.title,
+              records_description: request.records_description,
+              customer: request.customer,
+              assigned_to: request.assigned_to,
+              department: request.department,
+              priority: request.priority,
+              status: request.status,
+              category: request.category,
+              due_date: request.due_date
             },
           ])
           .select()
@@ -178,18 +133,7 @@ export function RequestsContextProvider({ children }) {
         if (error) throw error;
       }
 
-      /*console.log("isAllRecords : ", isAllRecords);
-      console.log("isDigitizedRecords : ", isDigitizedRecords);
-      console.log("isDisposedRecords : ", isDisposedRecords);
-
-      if (isAllRecords) {
-        await getAllRecords();
-      } else if (isDigitizedRecords) {
-        await getDigitizedRecords();
-      } else if (isDisposedRecords) {
-        await getDisposedRecords();
-      }*/
-
+      await getRequests(requestType);
 
     } catch (error) {
       alert(error.error_description || error.message);
@@ -198,27 +142,30 @@ export function RequestsContextProvider({ children }) {
     }
   };
 
-  const updateRecord = async (record) => {
+  const updateRequest = async (request) => {
     setLoading(true);
     try {
 
       const { error } = await supabase
-        .from("records")
+        .from("requests")
         //.update({ item })
         .update({
-          box_location: record.box_location,
-          box_content: record.box_content,
-          record_title: record.record_title,
-          department: record.department,
-          row: record.row,
-          status: record.status
+          title: request.title,
+          records_description: request.records_description,
+          customer: request.customer,
+          assigned_to: request.assigned_to,
+          department: request.department,
+          priority: request.priority,
+          status: request.status,
+          category: request.category,
+          due_date: request.due_date
         })
-        .eq("id", record.id); //matching id of row to update
+        .eq("id", request.id); //matching id of row to update
 
       if (error) throw error;
 
-      await getDisposedRecords();
-      console.log(record);
+      await getRequests(requestType);
+      console.log(request);
 
     } catch (error) {
       alert(error.error_description || error.message);
@@ -232,27 +179,17 @@ export function RequestsContextProvider({ children }) {
       value={{
         loading,
         adding,
-        recordsCount,
-        setRecordsCount,
-        allRecords,
-        isAllRecords,
-        setIsAllRecords,
-        getAllRecords,
-        disposedRecords,
-        isDisposedRecords,
-        setIsDisposedRecords,
-        getDisposedRecords,
-        disposedRecordsCount,
-        setDisposedRecordsCount,
-        digitizedRecords,
-        isDigitizedRecords,
-        setIsDigitizedRecords,
-        getDigitizedRecords,
-        deleteRecord,
-        saveRecord,
-        updateRecord,
-        setRows, 
+        requestsCount,
+        setRequestsCount,
+        requestsList,
+        getRequests,
+        deleteRequest,
+        saveRequest,
+        updateRequest,
+        setRows,
         setFirst,
+        requestType,
+        setRequestType,
       }}
     >
       {children}
