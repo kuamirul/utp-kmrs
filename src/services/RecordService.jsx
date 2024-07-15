@@ -1,22 +1,18 @@
 import React, { createContext, useState } from "react";
 import { supabase } from "../supabaseClient";
+// import { recordType} from '../components/RecordsTable';
 
 // Initializing context
 export const ItemsContext = createContext();
 
 export function ItemsContextProvider({ children }) {
-  const [allRecords, setAllRecords] = useState([]);
-  const [disposedRecords, setDisposedRecords] = useState([]);
-  const [digitizedRecords, setDigitizedRecords] = useState([]);
-  const [isAllRecords, setIsAllRecords] = useState(false);
-  const [isDigitizedRecords, setIsDigitizedRecords] = useState(false);
-  const [isDisposedRecords, setIsDisposedRecords] = useState(false);
-  const [disposedRecordsCount, setDisposedRecordsCount] = useState(0);
+  const [recordsList, setRecords] = useState([]);
   const [recordsCount, setRecordsCount] = useState(0);
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(10);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [recordType, setRecordType] = useState("");
 
   // https://github.com/orgs/supabase/discussions/1223
   const getPagination = (page, size) => {
@@ -28,71 +24,35 @@ export function ItemsContextProvider({ children }) {
     return { from, to }
   }
 
-  const getAllRecords = async () => {
+  const getRecords = async (recordType) => {
     const { from, to } = getPagination(first, rows);
     setLoading(true);
     try {
 
-      const { error, data, count } = await supabase
+      let query = supabase
         .from('records')
-        .select('id,box_location,box_content,record_title,department,row,status',{ count: 'exact'})
-        .range(from, to)
-        .order("id", { ascending: false });
+        .select('id,box_location,box_content,record_title,department,row,status', { count: 'exact' });
+
+      if (recordType === "all") {
+        query = query.range(from, to);
+        query = query.order("id", { ascending: false });
+      }
+      else if (recordType === "disposed") {
+        query = query.eq('status', 'Disposed');
+        query = query.range(from, to);
+        query = query.order("id", { ascending: false });
+      }
+      else if (recordType === "digitized") {
+        query = query.eq('status', 'Digitized');
+        query = query.range(from, to);
+        query = query.order("id", { ascending: false });
+      }
+
+      const { error, data, count } = await query
 
       if (error) throw error;
 
-      if (data) setAllRecords(data);
-
-      if (count) setRecordsCount(count);
-
-    } catch (error) {
-      alert(error.error_description || error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getDigitizedRecords = async () => {
-    const { from, to } = getPagination(first, rows);
-    setLoading(true);
-    try {
-
-      const { error, data, count } = await supabase
-        .from('records')
-        .select('id,box_location,box_content,record_title,department,row,status',{ count: 'exact'})
-        .eq('status', 'Digitized')
-        .range(from, to)
-        .order("id", { ascending: false });
-
-      if (error) throw error; //check if there was an error fetching the data and move the execution to the catch block
-
-      if (data) setDigitizedRecords(data);
-
-      if (count) setRecordsCount(count);
-
-    } catch (error) {
-      alert(error.error_description || error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getDisposedRecords = async () => {
-    const { from, to } = getPagination(first, rows);
-    //console.log("from: ", from, " to: ", to);
-    setLoading(true);
-    try {
-
-      const { error, data, count } = await supabase
-        .from('records')
-        .select('id,box_location,box_content,record_title,department,row,status',{ count: 'exact'})
-        .eq('status', 'Disposed')
-        .range(from, to)
-        .order("id", { ascending: false });
-
-      if (error) throw error; 
-
-      if (data) setDisposedRecords(data);
+      if (data) setRecords(data);
 
       if (count) setRecordsCount(count);
 
@@ -126,7 +86,7 @@ export function ItemsContextProvider({ children }) {
 
       if (error) throw error;
 
-      await getDisposedRecords();
+      await getRecords(recordType);
 
     } catch (error) {
       alert(error.error_description || error.message);
@@ -178,18 +138,7 @@ export function ItemsContextProvider({ children }) {
         if (error) throw error;
       }
 
-      /*console.log("isAllRecords : ", isAllRecords);
-      console.log("isDigitizedRecords : ", isDigitizedRecords);
-      console.log("isDisposedRecords : ", isDisposedRecords);
-
-      if (isAllRecords) {
-        await getAllRecords();
-      } else if (isDigitizedRecords) {
-        await getDigitizedRecords();
-      } else if (isDisposedRecords) {
-        await getDisposedRecords();
-      }*/
-
+      await getRecords(recordType);
 
     } catch (error) {
       alert(error.error_description || error.message);
@@ -217,7 +166,7 @@ export function ItemsContextProvider({ children }) {
 
       if (error) throw error;
 
-      await getDisposedRecords();
+      await getRecords(recordType);
       console.log(record);
 
     } catch (error) {
@@ -234,25 +183,15 @@ export function ItemsContextProvider({ children }) {
         adding,
         recordsCount,
         setRecordsCount,
-        allRecords,
-        isAllRecords,
-        setIsAllRecords,
-        getAllRecords,
-        disposedRecords,
-        isDisposedRecords,
-        setIsDisposedRecords,
-        getDisposedRecords,
-        disposedRecordsCount,
-        setDisposedRecordsCount,
-        digitizedRecords,
-        isDigitizedRecords,
-        setIsDigitizedRecords,
-        getDigitizedRecords,
+        recordsList,
+        getRecords,
         deleteRecord,
         saveRecord,
         updateRecord,
-        setRows, 
+        setRows,
         setFirst,
+        recordType,
+        setRecordType,
       }}
     >
       {children}

@@ -9,6 +9,13 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import { Link } from "react-router-dom";
 
+
+import { useLocation } from 'react-router-dom';
+
+
+  
+
+
 export default function RouterDemo() {
     //const router = useRouter();
     const items = [
@@ -55,6 +62,9 @@ export default function RouterDemo() {
             url: '/record-management-guideline',
         },
     ];
+
+    let location = useLocation();
+    console.log(location);
 
     return (
         <TieredMenu model={items} breakpoint="767px" />

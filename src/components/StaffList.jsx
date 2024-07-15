@@ -308,7 +308,7 @@ export default function StaffList() {
       <div className="card">
         <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
-        <DataTable ref={dt} value={allUsers} dataKey="id" lazy
+        <DataTable ref={dt} value={allUsers} dataKey="id" 
           selection={selectedUsers} onSelectionChange={(e) => setSelectedUsers(e.value)}
           paginator rows={10} rowsPerPageOptions={[5, 10, 25]} totalRecords={usersCount} first={lazyState.first} onPage={onPage}
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
@@ -352,7 +352,7 @@ export default function StaffList() {
 
           <div className="field">
             <label htmlFor="email" className="font-bold">Row</label>
-            <InputText id="email" value={user.email} onChange={(e) => onInputChange(e, 'email')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.email })} />
+            <InputText id="email" value={user.email} onChange={(e) => onInputChange(e, 'email')} disabled autoFocus className={classNames({ 'p-invalid': submitted && !user.email })} />
           </div>
 
           <div className="field">

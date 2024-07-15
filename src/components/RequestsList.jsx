@@ -13,122 +13,109 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import 'primereact/resources/themes/tailwind-light/theme.css';
 import 'primeicons/primeicons.css';
-import { ItemsContext } from "../services/RecordService";
+import { RequestsContext } from "../services/RequestService";
 
 
-export default function AllRecords() {
+export default function requestsTable({ requestType }) {
 
-  const { getAllRecords, allRecords, recordsCount } = useContext(ItemsContext);
+  const { getRequests, requestsList, requestsCount, setRequestType } = useContext(RequestsContext);
 
-  let emptyRecord = {
+  let emptyRequest = {
     id: null,
-    record_title: '',
-    box_location: '',
-    department: '',
-    box_content: '',
-    row: '',
-    status: ''
+    title: '',
+    records_description: '',
+    customer: null,
+    assigned_to: null,
+    department: null,
+    priority: '',
+    status: '',
+    category: '',
+    due_date: null
   };
 
-  const [records, setRecords] = useState(null);
-  const [recordDialog, setRecordDialog] = useState(false);
-  const [deleteRecordDialog, setDeleteRecordDialog] = useState(false);
-  const [deleteRecordsDialog, setDeleteRecordsDialog] = useState(false);
-  const [record, setRecord] = useState(emptyRecord);
-  const [selectedRecords, setSelectedRecords] = useState(null);
+  const [requests, setRequests] = useState(null);
+  const [requestDialog, setRequestDialog] = useState(false);
+  const [deleteRequestDialog, setDeleteRequestDialog] = useState(false);
+  const [deleteRequestsDialog, setDeleteRequestsDialog] = useState(false);
+  const [request, setRequest] = useState(emptyRequest);
+  const [selectedRequests, setSelectedRequests] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [globalFilter, setGlobalFilter] = useState(null);
   const toast = useRef(null);
   const dt = useRef(null);
 
   const openNew = () => {
-    setRecord(emptyRecord);
+    setRequest(emptyRequest);
     setSubmitted(false);
-    setRecordDialog(true);
+    setRequestDialog(true);
   };
 
   const hideDialog = () => {
     setSubmitted(false);
-    setRecordDialog(false);
+    setRequestDialog(false);
   };
 
-  const hideDeleteRecordDialog = () => {
-    setDeleteRecordDialog(false);
+  const hideDeleteRequestDialog = () => {
+    setDeleteRequestDialog(false);
   };
 
-  const hideDeleteRecordsDialog = () => {
-    setDeleteRecordsDialog(false);
+  const hideDeleteRequestsDialog = () => {
+    setDeleteRequestsDialog(false);
   };
 
   const [item, setItem] = useState([]);
   const [tab, setTab] = useState("active");
-  const { saveRecord, adding, setIsAllRecords } = useContext(ItemsContext);
+  const { saveRequest, adding } = useContext(RequestsContext);
 
   const handleSaveRecord = async (e) => {
     e.preventDefault();
     setSubmitted(true);
-    setIsAllRecords(true);
-    console.log("record on save button click: ", record);
+    console.log("request on save button click: ", request);
 
     try {
-      await saveRecord(record);
+      await saveRequest(request);
     } catch (err) {
       console.log(err);
     } finally {
-      setRecord({ ...record });
-      setRecordDialog(false);
-      setRecord(emptyRecord);
-      window.location.reload();
-      /*if (record.record_title.trim()) {
-          let _records = [...records];
-          let _record = { ...record };
- 
-          if (record.id) {
-              const index = findIndexById(record.id);
- 
-              _records[index] = _record;
-              toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Updated', life: 3000 });
-          } else {
-              //_record.id = createId();
-              // _record.image = 'record-placeholder.svg';
-              //_records.push(_record);
-              toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Created', life: 3000 });
-          }
- 
-          setRecords(_records);
-          setRecordDialog(false);
-          setRecord(emptyRecord);
-      }*/
-      toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Updated', life: 3000 });
+      setRequest({ ...request });
+      setRequestDialog(false);
+      setRequest(emptyRequest);
+
+      if (request.id) {
+        toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Updated', life: 3000 });
+      } else {
+        toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Created', life: 3000 });
+      }
+
     }
   };
 
-  const editRecord = (record) => {
-    setRecord({ ...record });
-    setRecordDialog(true);
+  const editRequest = (request) => {
+    setRequest({ ...request });
+    setRequestDialog(true);
   };
 
-  const confirmDeleteRecord = (record) => {
-    setRecord(record);
-    setDeleteRecordDialog(true);
+  const confirmDeleteRequest = (request) => {
+    setRequest(request);
+    setDeleteRequestDialog(true);
   };
 
-  const { deleteRecord } = useContext(ItemsContext);
-  const handleDeleteRecord = async (id) => {
-    //let _records = records.filter((val) => val.id !== record.id);
+  const { deleteRequest } = useContext(RequestsContext);
+  const handleDeleteRequest = async (id) => {
+    //let _requests = requests.filter((val) => val.id !== request.id);
     console.log(id);
     try {
-      await deleteRecord(id);
+      await deleteRequest(id);
 
-      setRecord({ ...record });
-      // setRecordDialog(true);
+      setRequest({ ...request });
+      // setRequestDialog(true);
     } catch (error) {
       console.log(error);
     } finally {
 
-      setRecord({ ...record });
-      setDeleteRecordDialog(false);
-      setRecord(emptyRecord);
+      setRequest({ ...request });
+      setDeleteRequestDialog(false);
+      setRequest(emptyRequest);
       toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Deleted', life: 3000 });
     }
 
@@ -137,8 +124,8 @@ export default function AllRecords() {
   const findIndexById = (id) => {
     let index = -1;
 
-    for (let i = 0; i < records.length; i++) {
-      if (records[i].id === id) {
+    for (let i = 0; i < requests.length; i++) {
+      if (requests[i].id === id) {
         index = i;
         break;
       }
@@ -152,46 +139,46 @@ export default function AllRecords() {
   };
 
   const confirmDeleteSelected = () => {
-    setDeleteRecordsDialog(true);
+    setDeleteRequestsDialog(true);
   };
 
   const deleteSelectedRecords = async () => {
 
-    const idArray = selectedRecords.map(({ id }) => id);
+    const idArray = selectedRequests.map(({ id }) => id);
 
     try {
-      await deleteRecord(idArray);
-      setRecord({ ...record });
-      // setRecordDialog(true);
+      await deleteRequest(idArray);
+      setRequest({ ...request });
+      // setRequestDialog(true);
     } catch (error) {
       console.log(error);
     } finally {
-      setRecord({ ...record });
-      setDeleteRecordsDialog(false);
-      setSelectedRecords(null);
+      setRequest({ ...request });
+      setDeleteRequestsDialog(false);
+      setSelectedRequests(null);
       toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Records Deleted', life: 3000 });
     }
 
   };
 
   const onStatusChange = (e) => {
-    let _record = { ...record };
-    _record['status'] = e.value;
-    setRecord(_record);
+    let _request = { ...request };
+    _request['status'] = e.value;
+    setRequest(_request);
   };
 
   const onInputChange = (e, name) => {
     const val = (e.target && e.target.value) || '';
-    let _record = { ...record };
-    _record[`${name}`] = val;
-    setRecord(_record);
+    let _request = { ...request };
+    _request[`${name}`] = val;
+    setRequest(_request);
   };
 
   const leftToolbarTemplate = () => {
     return (
       <div className="flex flex-wrap gap-2">
         <Button label="New" icon="pi pi-plus" severity="success" onClick={openNew} />
-        <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedRecords || !selectedRecords.length} />
+        <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedRequests || !selectedRequests.length} />
       </div>
     );
   };
@@ -203,8 +190,8 @@ export default function AllRecords() {
   const actionBodyTemplate = (rowData) => {
     return (
       <React.Fragment>
-        <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editRecord(rowData)} />
-        <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteRecord(rowData)} />
+        <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editRequest(rowData)} />
+        <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteRequest(rowData)} />
       </React.Fragment>
     );
   };
@@ -216,8 +203,8 @@ export default function AllRecords() {
     return <Tag value={rowData.status} severity={getStatus(rowData)}></Tag>;
   };
 
-  const getStatus = (record) => {
-    switch (record.status) {
+  const getStatus = (request) => {
+    switch (request.status) {
       case 'Active':
         return 'Active';
 
@@ -240,27 +227,29 @@ export default function AllRecords() {
 
   const header = (
     <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
-      <h4 className="m-0">Manage Records</h4>
-      <IconField iconPosition="left">
+      <h4 className="m-0">Manage Requests</h4>
+      {/* <IconField iconPosition="left">
         <InputIcon className="pi pi-search" />
         <InputText type="search" onInput={(e) => setGlobalFilter(e.target.value)} placeholder="Search..." />
-      </IconField>
+      </IconField> */}
     </div>
   );
 
   const onRowEditComplete = (e) => {
-    let _records = [...records];
+    let _requests = [...requests];
     let { newData, index } = e;
 
-    _records[index] = newData;
+    _requests[index] = newData;
 
-    setRecords(_records);
+    setRequests(_requests);
   };
 
   const textEditor = (options) => {
     return <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />;
   };
 
+
+  // https://stackblitz.com/run?file=src%2Fservice%2FCustomerService.jsx,src%2FApp.jsx
   const [loading, setLoading] = useState(false);
   const [totalRecords, setTotalRecords] = useState(0);
   const [selectAll, setSelectAll] = useState(false);
@@ -269,12 +258,21 @@ export default function AllRecords() {
     rows: 10,
     page: 1,
     sortField: null,
-    sortOrder: null
+    sortOrder: null,
+    filters: {
+      request_title: { value: '', matchMode: 'contains' },
+      box_location: { value: '', matchMode: 'contains' },
+      department: { value: '', matchMode: 'contains' },
+      box_content: { value: '', matchMode: 'contains' },
+      row: { value: '', matchMode: 'contains' },
+      status: { value: '', matchMode: 'contains' }
+    }
   });
 
   let networkTimeout = null;
 
   useEffect(() => {
+    setRequestType(requestType);
     loadLazyData();
   }, [lazyState]);
 
@@ -284,14 +282,14 @@ export default function AllRecords() {
     if (networkTimeout) {
       clearTimeout(networkTimeout);
     }
-
-    getAllRecords({ lazyEvent: JSON.stringify(lazyState) });
-    setTotalRecords(recordsCount);
+    // TODO EXPORT CONST RECORD FROM SERVICE
+    getRequests(requestType, { lazyEvent: JSON.stringify(lazyState) });
+    setTotalRecords(requestsCount);
     setLoading(false);
 
   };
 
-  const { setRows, setFirst } = useContext(ItemsContext);
+  const { setRows, setFirst } = useContext(RequestsContext);
 
   const onPage = (event) => {
     setlazyState(event);
@@ -337,75 +335,100 @@ export default function AllRecords() {
       <div className="card">
         <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
-        <DataTable ref={dt} value={allRecords} dataKey="id" lazy
-          selection={selectedRecords} onSelectionChange={(e) => setSelectedRecords(e.value)}
-          paginator rows={10} rowsPerPageOptions={[5, 10, 25]} totalRecords={recordsCount} first={lazyState.first} onPage={onPage}
+        <DataTable 
+          ref={dt} value={requestsList} dataKey="id" lazy
+          selection={selectedRequests} onSelectionChange={(e) => setSelectedRequests(e.value)}
+          paginator rows={10} rowsPerPageOptions={[5, 10, 25]} totalRecords={requestsCount} first={lazyState.first} onPage={onPage}
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records" globalFilter={globalFilter} header={header}>
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} requests" 
+          onFilter={onFilter} filters={lazyState.filters}  filterDisplay="row" 
+          header={header}>
           <Column selectionMode="multiple" exportable={false}></Column>
           {/* <Column field="id" header="#" sortable ></Column> */}
-          <Column field="record_title" header="Record Title" sortable style={{ minWidth: '16rem' }}></Column>
-          <Column field="box_location" header="Box Location" sortable ></Column>
-          <Column field="department" header="Department" sortable style={{ minWidth: '8rem' }}></Column>
-          <Column field="box_content" header="Box Content" sortable style={{ minWidth: '10rem' }}></Column>
-          <Column field="row" header="Row" sortable style={{ minWidth: '12rem' }}></Column>
-          <Column field="status" header="Status" sortable style={{ minWidth: '12rem' }}></Column>
+
+          <Column field="title" header="Request Title" sortable filter filterPlaceholder="Search" style={{ minWidth: '16rem' }}></Column>
+          <Column field="records_description" header="Box Location" filter filterPlaceholder="Search" sortable style={{ minWidth: '12rem' }}></Column>
+          <Column field="customer" header="Customer" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="assigned_to" header="Assigned To" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="department" header="Department" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="priority" header="Priority" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="status" header="Status" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="category" header="Category" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="due_date" header="Due Date" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
           <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '12rem' }}></Column>
           {/*<Column rowEditor={allowEdit} headerStyle={{ width: '10%', minWidth: '8rem' }} bodyStyle={{ textAlign: 'center' }}></Column> */}
         </DataTable>
 
+        {/* https://primereact.org/datatable/#lazy_load */}
+        {/* value={customers} lazy filterDisplay="row" dataKey="id" paginator
+            first={lazyState.first} rows={10} totalRecords={totalRecords} onPage={onPage}
+            onSort={onSort} sortField={lazyState.sortField} sortOrder={lazyState.sortOrder}
+            onFilter={onFilter} filters={lazyState.filters} loading={loading} tableStyle={{ minWidth: '75rem' }}
+            selection={selectedCustomers} onSelectionChange={onSelectionChange} selectAll={selectAll} onSelectAllChange={onSelectAllChange} */}
+
       </div>
 
-      <Dialog visible={recordDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Record Details" modal className="p-fluid" onHide={hideDialog}>
-        {/* {record.image && <img src={`https://primefaces.org/cdn/primereact/images/record/${record.image}`} alt={record.image} className="record-image block m-auto pb-3" />} */}
+      <Column field="title" header="Request Title" sortable filter filterPlaceholder="Search" style={{ minWidth: '16rem' }}></Column>
+          <Column field="records_description" header="Box Location" filter filterPlaceholder="Search" sortable style={{ minWidth: '12rem' }}></Column>
+          <Column field="customer" header="Customer" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="assigned_to" header="Assigned To" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="department" header="Department" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="priority" header="Priority" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="status" header="Status" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="category" header="Category" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="due_date" header="Due Date" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+
+
+      <Dialog visible={requestDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Record Details" modal className="p-fluid" onHide={hideDialog}>
+        {/* {request.image && <img src={`https://primefaces.org/cdn/primereact/images/request/${request.image}`} alt={request.image} className="request-image block m-auto pb-3" />} */}
         <form onSubmit={handleSaveRecord} >
           <div className="field">
-            <label htmlFor="name" className="font-bold">Record Title</label>
-            <InputText id="record_title" value={record.record_title} onChange={(e) => onInputChange(e, 'record_title')} required autoFocus className={classNames({ 'p-invalid': submitted && !record.record_title })} />
-            {submitted && !record.record_title && <small className="p-error">Record Title is required.</small>}
+            <label htmlFor="title" className="font-bold">Request Title</label>
+            <InputText id="title" value={request.title} onChange={(e) => onInputChange(e, 'title')} required autoFocus className={classNames({ 'p-invalid': submitted && !request.request_title })} />
+            {submitted && !request.title && <small className="p-error">Record Title is required.</small>}
           </div>
 
           <div className="field">
-            <label htmlFor="box_location" className="font-bold">Box Location</label>
-            <InputText id="box_location" value={record.box_location} onChange={(e) => onInputChange(e, 'box_location')} required autoFocus className={classNames({ 'p-invalid': submitted && !record.box_location })} />
+            <label htmlFor="records_description" className="font-bold">Request Description</label>
+            <InputText id="records_description" value={request.records_description} onChange={(e) => onInputChange(e, 'records_description')} required autoFocus className={classNames({ 'p-invalid': submitted && !request.box_location })} />
           </div>
 
           <div className="field">
             <label htmlFor="department" className="font-bold">Department</label>
-            <InputText id="department" value={record.department} onChange={(e) => onInputChange(e, 'department')} required autoFocus className={classNames({ 'p-invalid': submitted && !record.department })} />
+            <InputText id="department" value={request.department} onChange={(e) => onInputChange(e, 'department')} required autoFocus className={classNames({ 'p-invalid': submitted && !request.department })} />
           </div>
 
           <div className="field">
-            <label htmlFor="box_content" className="font-bold">Box Content</label>
-            <InputText id="box_content" value={record.box_content} onChange={(e) => onInputChange(e, 'box_content')} required autoFocus className={classNames({ 'p-invalid': submitted && !record.box_content })} />
+            <label htmlFor="priority" className="font-bold">Priority</label>
+            <InputText id="priority" value={request.priority} onChange={(e) => onInputChange(e, 'priority')} required autoFocus className={classNames({ 'p-invalid': submitted && !request.priority })} />
           </div>
 
           <div className="field">
-            <label htmlFor="row" className="font-bold">Row</label>
-            <InputText id="row" value={record.row} onChange={(e) => onInputChange(e, 'row')} required autoFocus className={classNames({ 'p-invalid': submitted && !record.row })} />
+            <label htmlFor="category" className="font-bold">Category</label>
+            <InputText id="category" value={request.category} onChange={(e) => onInputChange(e, 'category')} required autoFocus className={classNames({ 'p-invalid': submitted && !request.category })} />
           </div>
 
           <div className="field">
             <label className="mb-3 font-bold">Status</label>
             <div className="formgrid grid">
               <div className="field-radiobutton col-6">
-                <RadioButton inputId="category1" name="category" value="Active" onChange={onStatusChange} checked={record.status === 'Active'} />
+                <RadioButton inputId="category1" name="category" value="Active" onChange={onStatusChange} checked={request.status === 'Active'} />
                 <label htmlFor="category1">Active</label>
               </div>
               <div className="field-radiobutton col-6">
-                <RadioButton inputId="category2" name="category" value="Digitized" onChange={onStatusChange} checked={record.status === 'Digitized'} />
+                <RadioButton inputId="category2" name="category" value="Digitized" onChange={onStatusChange} checked={request.status === 'Digitized'} />
                 <label htmlFor="category2">Digitized</label>
               </div>
               <div className="field-radiobutton col-6">
-                <RadioButton inputId="category3" name="category" value="Disposed" onChange={onStatusChange} checked={record.status === 'Disposed'} />
+                <RadioButton inputId="category3" name="category" value="Disposed" onChange={onStatusChange} checked={request.status === 'Disposed'} />
                 <label htmlFor="category3">Disposed</label>
               </div>
               <div className="field-radiobutton col-6">
-                <RadioButton inputId="category4" name="category" value="Inactive" onChange={onStatusChange} checked={record.status === 'Inactive'} />
+                <RadioButton inputId="category4" name="category" value="Inactive" onChange={onStatusChange} checked={request.status === 'Inactive'} />
                 <label htmlFor="category4">Inactive</label>
               </div>
               <div className="field-radiobutton col-6">
-                <RadioButton inputId="category4" name="category" value="KIV" onChange={onStatusChange} checked={record.status === 'KIV'} />
+                <RadioButton inputId="category4" name="category" value="KIV" onChange={onStatusChange} checked={request.status === 'KIV'} />
                 <label htmlFor="category4">KIV</label>
               </div>
             </div>
@@ -415,13 +438,13 @@ export default function AllRecords() {
                     <label className="mb-3 font-bold">Status</label>
                         <div className="formgrid grid">
                         <Dropdown
-                            value={getStatus(record.status)}
+                            value={getStatus(request.status)}
                             options={statuses}
-                            //onChange={(e) => record.editorCallback(e.value)}
+                            //onChange={(e) => request.editorCallback(e.value)}
                             onChange={(e) => setSelectedStatus(e.value)}
                             placeholder="Select a Status"
-                            itemTemplate={(record) => {
-                                return <Tag value={record} severity={getStatus(record)}></Tag>;
+                            itemTemplate={(request) => {
+                                return <Tag value={request} severity={getStatus(request)}></Tag>;
                             }}
                         />
                         </div>
@@ -436,31 +459,31 @@ export default function AllRecords() {
         </form>
       </Dialog>
 
-      {/* <Dialog visible={deleteRecordDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteRecordDialogFooter} onHide={hideDeleteRecordDialog}> */}
-      <Dialog visible={deleteRecordDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal onHide={hideDeleteRecordDialog}>
+      {/* <Dialog visible={deleteRequestDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteRequestDialogFooter} onHide={hideDeleteRequestDialog}> */}
+      <Dialog visible={deleteRequestDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal onHide={hideDeleteRequestDialog}>
         <div className="confirmation-content">
           <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-          {record && (
+          {request && (
             <span>
-              Are you sure you want to delete <b>{record.record_title}</b>?
+              Are you sure you want to delete <b>{request.request_title}</b>?
             </span>
           )}
         </div>
         <div className="p-dialog-footer pb-0">
-          <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteRecordDialog} />
-          <Button label="Yes" icon="pi pi-check" severity="danger" onClick={() => handleDeleteRecord(record.id)} />
-          {/* <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteRecord} /> */}
+          <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteRequestDialog} />
+          <Button label="Yes" icon="pi pi-check" severity="danger" onClick={() => handleDeleteRequest(request.id)} />
+          {/* <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteRequest} /> */}
         </div>
       </Dialog>
 
-      {/* <Dialog visible={deleteRecordsDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteRecordsDialogFooter} onHide={hideDeleteRecordsDialog}> */}
-      <Dialog visible={deleteRecordsDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal onHide={hideDeleteRecordsDialog}>
+      {/* <Dialog visible={deleteRequestsDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteRequestsDialogFooter} onHide={hideDeleteRequestsDialog}> */}
+      <Dialog visible={deleteRequestsDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal onHide={hideDeleteRequestsDialog}>
         <div className="confirmation-content">
           <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-          {record && <span>Are you sure you want to delete the {selectedRecords?.length} selected records?</span>}
+          {request && <span>Are you sure you want to delete the {selectedRequests?.length} selected requests?</span>}
         </div>
         <div className="p-dialog-footer pb-0">
-          <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteRecordsDialog} />
+          <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteRequestsDialog} />
           <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteSelectedRecords} />
         </div>
       </Dialog>
