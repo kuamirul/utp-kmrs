@@ -13,14 +13,14 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import 'primereact/resources/themes/tailwind-light/theme.css';
 import 'primeicons/primeicons.css';
-import { UsersContext } from "../services/UserService";
+import { StaffsContext } from "../services/StaffService";
 
 
 export default function StaffList() {
 
-  const { getAllUsers, allUsers, usersCount } = useContext(UsersContext);
+  const { getAllStaffs, allStaffs, staffsCount } = useContext(StaffsContext);
 
-  let emptyUser = {
+  let emptyStaff = {
     id: null,
     full_name: '',
     company: '',
@@ -30,106 +30,106 @@ export default function StaffList() {
     status: ''
   };
 
-  const [users, setUsers] = useState(null);
-  const [userDialog, setUserDialog] = useState(false);
-  const [deleteUserDialog, setDeleteUserDialog] = useState(false);
-  const [deleteUsersDialog, setDeleteUsersDialog] = useState(false);
-  const [user, setUser] = useState(emptyUser);
-  const [selectedUsers, setSelectedUsers] = useState(null);
+  const [staffs, setStaffs] = useState(null);
+  const [staffDialog, setStaffDialog] = useState(false);
+  const [deleteStaffDialog, setDeleteStaffDialog] = useState(false);
+  const [deleteStaffsDialog, setDeleteStaffsDialog] = useState(false);
+  const [staff, setStaff] = useState(emptyStaff);
+  const [selectedStaffs, setSelectedStaffs] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [globalFilter, setGlobalFilter] = useState(null);
   const toast = useRef(null);
   const dt = useRef(null);
 
   const openNew = () => {
-    setUser(emptyUser);
+    setStaff(emptyStaff);
     setSubmitted(false);
-    setUserDialog(true);
+    setStaffDialog(true);
   };
 
   const hideDialog = () => {
     setSubmitted(false);
-    setUserDialog(false);
+    setStaffDialog(false);
   };
 
-  const hideDeleteUserDialog = () => {
-    setDeleteUserDialog(false);
+  const hideDeleteStaffDialog = () => {
+    setDeleteStaffDialog(false);
   };
 
-  const hideDeleteUsersDialog = () => {
-    setDeleteUsersDialog(false);
+  const hideDeleteStaffsDialog = () => {
+    setDeleteStaffsDialog(false);
   };
 
   const [item, setItem] = useState([]);
   const [tab, setTab] = useState("active");
-  const { saveUser, adding, setIsAllUsers } = useContext(UsersContext);
+  const { saveStaff, adding, setIsAllStaffs } = useContext(StaffsContext);
 
-  const handleSaveUser = async (e) => {
+  const handleSaveStaff = async (e) => {
     e.preventDefault();
     setSubmitted(true);
-    setIsAllUsers(true);
-    console.log("user on save button click: ", user);
+    setIsAllStaffs(true);
+    console.log("staff on save button click: ", staff);
 
     try {
-      await saveUser(user);
+      await saveStaff(staff);
     } catch (err) {
       console.log(err);
     } finally {
-      setUser({ ...user });
-      setUserDialog(false);
-      setUser(emptyUser);
+      setStaff({ ...staff });
+      setStaffDialog(false);
+      setStaff(emptyStaff);
       window.location.reload();
-      /*if (user.full_name.trim()) {
-          let _users = [...users];
-          let _user = { ...user };
+      /*if (staff.full_name.trim()) {
+          let _staffs = [...staffs];
+          let _staff = { ...staff };
  
-          if (user.id) {
-              const index = findIndexById(user.id);
+          if (staff.id) {
+              const index = findIndexById(staff.id);
  
-              _users[index] = _user;
-              toast.current.show({ severity: 'success', summary: 'Successful', detail: 'User Updated', life: 3000 });
+              _staffs[index] = _staff;
+              toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Staff Updated', life: 3000 });
           } else {
-              //_user.id = createId();
-              // _user.image = 'user-placeholder.svg';
-              //_users.push(_user);
-              toast.current.show({ severity: 'success', summary: 'Successful', detail: 'User Created', life: 3000 });
+              //_staff.id = createId();
+              // _staff.image = 'staff-placeholder.svg';
+              //_staffs.push(_staff);
+              toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Staff Created', life: 3000 });
           }
  
-          setUsers(_users);
-          setUserDialog(false);
-          setUser(emptyUser);
+          setStaffs(_staffs);
+          setStaffDialog(false);
+          setStaff(emptyStaff);
       }*/
-      toast.current.show({ severity: 'success', summary: 'Successful', detail: 'User Updated', life: 3000 });
+      toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Staff Updated', life: 3000 });
     }
   };
 
-  const editUser = (user) => {
-    setUser({ ...user });
-    setUserDialog(true);
+  const editStaff = (staff) => {
+    setStaff({ ...staff });
+    setStaffDialog(true);
   };
 
-  const confirmDeleteUser = (user) => {
-    setUser(user);
-    setDeleteUserDialog(true);
+  const confirmDeleteStaff = (staff) => {
+    setStaff(staff);
+    setDeleteStaffDialog(true);
   };
 
-  const { deleteUser } = useContext(UsersContext);
-  const handleDeleteUser = async (id) => {
-    //let _users = users.filter((val) => val.id !== user.id);
+  const { deleteStaff } = useContext(StaffsContext);
+  const handleDeleteStaff = async (id) => {
+    //let _staffs = staffs.filter((val) => val.id !== staff.id);
     console.log(id);
     try {
-      await deleteUser(id);
+      await deleteStaff(id);
 
-      setUser({ ...user });
-      // setUserDialog(true);
+      setStaff({ ...staff });
+      // setStaffDialog(true);
     } catch (error) {
       console.log(error);
     } finally {
 
-      setUser({ ...user });
-      setDeleteUserDialog(false);
-      setUser(emptyUser);
-      toast.current.show({ severity: 'success', summary: 'Successful', detail: 'User Deleted', life: 3000 });
+      setStaff({ ...staff });
+      setDeleteStaffDialog(false);
+      setStaff(emptyStaff);
+      toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Staff Deleted', life: 3000 });
     }
 
   };
@@ -137,8 +137,8 @@ export default function StaffList() {
   const findIndexById = (id) => {
     let index = -1;
 
-    for (let i = 0; i < users.length; i++) {
-      if (users[i].id === id) {
+    for (let i = 0; i < staffs.length; i++) {
+      if (staffs[i].id === id) {
         index = i;
         break;
       }
@@ -152,46 +152,46 @@ export default function StaffList() {
   };
 
   const confirmDeleteSelected = () => {
-    setDeleteUsersDialog(true);
+    setDeleteStaffsDialog(true);
   };
 
-  const deleteSelectedUsers = async () => {
+  const deleteSelectedStaffs = async () => {
 
-    const idArray = selectedUsers.map(({ id }) => id);
+    const idArray = selectedStaffs.map(({ id }) => id);
 
     try {
-      await deleteUser(idArray);
-      setUser({ ...user });
-      // setUserDialog(true);
+      await deleteStaff(idArray);
+      setStaff({ ...staff });
+      // setStaffDialog(true);
     } catch (error) {
       console.log(error);
     } finally {
-      setUser({ ...user });
-      setDeleteUsersDialog(false);
-      setSelectedUsers(null);
-      toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Users Deleted', life: 3000 });
+      setStaff({ ...staff });
+      setDeleteStaffsDialog(false);
+      setSelectedStaffs(null);
+      toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Staffs Deleted', life: 3000 });
     }
 
   };
 
   const onStatusChange = (e) => {
-    let _user = { ...user };
-    _user['status'] = e.value;
-    setUser(_user);
+    let _staff = { ...staff };
+    _staff['status'] = e.value;
+    setStaff(_staff);
   };
 
   const onInputChange = (e, name) => {
     const val = (e.target && e.target.value) || '';
-    let _user = { ...user };
-    _user[`${name}`] = val;
-    setUser(_user);
+    let _staff = { ...staff };
+    _staff[`${name}`] = val;
+    setStaff(_staff);
   };
 
   const leftToolbarTemplate = () => {
     return (
       <div className="flex flex-wrap gap-2">
         <Button label="New" icon="pi pi-plus" severity="success" onClick={openNew} />
-        <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedUsers || !selectedUsers.length} />
+        <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedStaffs || !selectedStaffs.length} />
       </div>
     );
   };
@@ -203,8 +203,8 @@ export default function StaffList() {
   const actionBodyTemplate = (rowData) => {
     return (
       <React.Fragment>
-        <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editUser(rowData)} />
-        <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteUser(rowData)} />
+        <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editStaff(rowData)} />
+        <Button icon="pi pi-trash" rounded outlined severity="danger" onClick={() => confirmDeleteStaff(rowData)} />
       </React.Fragment>
     );
   };
@@ -220,12 +220,12 @@ export default function StaffList() {
   );
 
   const onRowEditComplete = (e) => {
-    let _users = [...users];
+    let _staffs = [...staffs];
     let { newData, index } = e;
 
-    _users[index] = newData;
+    _staffs[index] = newData;
 
-    setUsers(_users);
+    setStaffs(_staffs);
   };
 
   const textEditor = (options) => {
@@ -233,7 +233,7 @@ export default function StaffList() {
   };
 
   const [loading, setLoading] = useState(false);
-  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalStaffs, setTotalStaffs] = useState(0);
   const [selectAll, setSelectAll] = useState(false);
   const [lazyState, setlazyState] = useState({
     first: 0,
@@ -256,13 +256,13 @@ export default function StaffList() {
       clearTimeout(networkTimeout);
     }
 
-    getAllUsers({ lazyEvent: JSON.stringify(lazyState) });
-    setTotalUsers(usersCount);
+    getAllStaffs({ lazyEvent: JSON.stringify(lazyState) });
+    setTotalStaffs(staffsCount);
     setLoading(false);
 
   };
 
-  const { setRows, setFirst } = useContext(UsersContext);
+  const { setRows, setFirst } = useContext(StaffsContext);
 
   const onPage = (event) => {
     setlazyState(event);
@@ -284,7 +284,7 @@ export default function StaffList() {
     const value = event.value;
 
     setSelectedCustomers(value);
-    setSelectAll(value.length === totalUsers);
+    setSelectAll(value.length === totalStaffs);
   };
 
   const onSelectAllChange = (event) => {
@@ -308,9 +308,9 @@ export default function StaffList() {
       <div className="card">
         <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
-        <DataTable ref={dt} value={allUsers} dataKey="id" 
-          selection={selectedUsers} onSelectionChange={(e) => setSelectedUsers(e.value)}
-          paginator rows={10} rowsPerPageOptions={[5, 10, 25]} totalRecords={usersCount} first={lazyState.first} onPage={onPage}
+        <DataTable ref={dt} value={allStaffs} dataKey="id" 
+          selection={selectedStaffs} onSelectionChange={(e) => setSelectedStaffs(e.value)}
+          paginator rows={10} rowsPerPageOptions={[5, 10, 25]} totalRecords={staffsCount} first={lazyState.first} onPage={onPage}
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records" globalFilter={globalFilter} header={header}>
           <Column selectionMode="multiple" exportable={false}></Column>
@@ -326,38 +326,38 @@ export default function StaffList() {
 
       </div>
 
-      <Dialog visible={userDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="User Details" modal className="p-fluid" onHide={hideDialog}>
-        {/* {user.image && <img src={`https://primefaces.org/cdn/primereact/images/user/${user.image}`} alt={user.image} className="user-image block m-auto pb-3" />} */}
-        <form onSubmit={handleSaveUser} >
+      <Dialog visible={staffDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Staff Details" modal className="p-fluid" onHide={hideDialog}>
+        {/* {staff.image && <img src={`https://primefaces.org/cdn/primereact/images/staff/${staff.image}`} alt={staff.image} className="staff-image block m-auto pb-3" />} */}
+        <form onSubmit={handleSaveStaff} >
           <div className="field">
-            <label htmlFor="name" className="font-bold">User Title</label>
-            <InputText id="full_name" value={user.full_name} onChange={(e) => onInputChange(e, 'full_name')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.full_name })} />
-            {submitted && !user.full_name && <small className="p-error">User Title is required.</small>}
+            <label htmlFor="name" className="font-bold">Staff Title</label>
+            <InputText id="full_name" value={staff.full_name} onChange={(e) => onInputChange(e, 'full_name')} required autoFocus className={classNames({ 'p-invalid': submitted && !staff.full_name })} />
+            {submitted && !staff.full_name && <small className="p-error">Staff Title is required.</small>}
           </div>
 
           <div className="field">
             <label htmlFor="company" className="font-bold">Box Location</label>
-            <InputText id="company" value={user.company} onChange={(e) => onInputChange(e, 'company')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.company })} />
+            <InputText id="company" value={staff.company} onChange={(e) => onInputChange(e, 'company')} required autoFocus className={classNames({ 'p-invalid': submitted && !staff.company })} />
           </div>
 
           <div className="field">
             <label htmlFor="job_title" className="font-bold">Department</label>
-            <InputText id="job_title" value={user.job_title} onChange={(e) => onInputChange(e, 'job_title')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.job_title })} />
+            <InputText id="job_title" value={staff.job_title} onChange={(e) => onInputChange(e, 'job_title')} required autoFocus className={classNames({ 'p-invalid': submitted && !staff.job_title })} />
           </div>
 
           <div className="field">
             <label htmlFor="business_phone" className="font-bold">Box Content</label>
-            <InputText id="business_phone" value={user.business_phone} onChange={(e) => onInputChange(e, 'business_phone')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.business_phone })} />
+            <InputText id="business_phone" value={staff.business_phone} onChange={(e) => onInputChange(e, 'business_phone')} required autoFocus className={classNames({ 'p-invalid': submitted && !staff.business_phone })} />
           </div>
 
           <div className="field">
             <label htmlFor="email" className="font-bold">Row</label>
-            <InputText id="email" value={user.email} onChange={(e) => onInputChange(e, 'email')} disabled autoFocus className={classNames({ 'p-invalid': submitted && !user.email })} />
+            <InputText id="email" value={staff.email} onChange={(e) => onInputChange(e, 'email')} disabled autoFocus className={classNames({ 'p-invalid': submitted && !staff.email })} />
           </div>
 
           <div className="field">
             <label htmlFor="address" className="font-bold">Row</label>
-            <InputText id="address" value={user.address} onChange={(e) => onInputChange(e, 'address')} required autoFocus className={classNames({ 'p-invalid': submitted && !user.address })} />
+            <InputText id="address" value={staff.address} onChange={(e) => onInputChange(e, 'address')} required autoFocus className={classNames({ 'p-invalid': submitted && !staff.address })} />
           </div>
 
           <div className="p-dialog-footer pb-0">
@@ -368,31 +368,31 @@ export default function StaffList() {
         </form>
       </Dialog>
 
-     <Dialog visible={deleteUserDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal onHide={hideDeleteUserDialog}>
+     <Dialog visible={deleteStaffDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal onHide={hideDeleteStaffDialog}>
         <div className="confirmation-content">
           <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-          {user && (
+          {staff && (
             <span>
-              Are you sure you want to delete <b>{user.full_name}</b>?
+              Are you sure you want to delete <b>{staff.full_name}</b>?
             </span>
           )}
         </div>
         <div className="p-dialog-footer pb-0">
-          <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteUserDialog} />
-          <Button label="Yes" icon="pi pi-check" severity="danger" onClick={() => handleDeleteUser(user.id)} />
-          {/* <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteUser} /> */}
+          <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteStaffDialog} />
+          <Button label="Yes" icon="pi pi-check" severity="danger" onClick={() => handleDeleteStaff(staff.id)} />
+          {/* <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteStaff} /> */}
         </div>
       </Dialog>
 
-      {/* <Dialog visible={deleteUsersDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteUsersDialogFooter} onHide={hideDeleteUsersDialog}> */}
-      <Dialog visible={deleteUsersDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal onHide={hideDeleteUsersDialog}>
+      {/* <Dialog visible={deleteStaffsDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteStaffsDialogFooter} onHide={hideDeleteStaffsDialog}> */}
+      <Dialog visible={deleteStaffsDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal onHide={hideDeleteStaffsDialog}>
         <div className="confirmation-content">
           <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-          {user && <span>Are you sure you want to delete the {selectedUsers?.length} selected users?</span>}
+          {staff && <span>Are you sure you want to delete the {selectedStaffs?.length} selected staffs?</span>}
         </div>
         <div className="p-dialog-footer pb-0">
-          <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteUsersDialog} />
-          <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteSelectedUsers} />
+          <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteStaffsDialog} />
+          <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteSelectedStaffs} />
         </div>
       </Dialog>
     </div>
