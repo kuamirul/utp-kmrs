@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Container } from "react-bootstrap";
 import { Route, Routes } from "react-router-dom";
 import AuthRoute from "./components/AuthRoute";
+import AdminRoute from "./components/AdminRoute";
 import NavBar from "./components/NavBar";
 import SideMenu from "./components/SideMenu";
 import Home from "./pages/Home";
@@ -22,25 +23,29 @@ const App = () => {
   return (
     <>
       <NavBar />
-     
-        <div className="w-100">
-          <Routes>
-            <Route element={<AuthRoute />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/home" element={<Home />} />
-              <Route path="/request-list" element={<Requests />} />
-              <Route path="/user-details" element={<Users />} />
-              <Route path="/staff-details" element={<Staffs />} />
-              <Route path="/utp-records" element={<Records />} />
-              <Route path="/digitized-records" element={<DigitizedRecords />} />
-              <Route path="/disposed-records" element={<DisposedRecords />} />
-            </Route>
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/passwordreset" element={<PasswordReset />} />
-            <Route path="/update-password" element={<UpdatePassword />} />
-          </Routes>
-        </div>
+
+      <div className="w-100">
+        <Routes>
+          <Route element={<AuthRoute />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/request-list" element={<Requests />} />
+          </Route>
+          <Route element={<AdminRoute />}>
+            <Route path="/user-details" element={<Users />} />
+          </Route>
+          <Route element={<AuthRoute />}>
+            <Route path="/staff-details" element={<Staffs />} />
+            <Route path="/utp-records" element={<Records />} />
+            <Route path="/digitized-records" element={<DigitizedRecords />} />
+            <Route path="/disposed-records" element={<DisposedRecords />} />
+          </Route>
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/passwordreset" element={<PasswordReset />} />
+          <Route path="/update-password" element={<UpdatePassword />} />
+        </Routes>
+      </div>
       {/* <SideMenu /> */}
     </>
   );
