@@ -6,7 +6,7 @@ import 'primeflex/primeflex.css';
 import { Panel } from 'primereact/panel';
 // components
 import DigitizedRecordsTable from '../components/DigitizedRecordsTable'
-import RecordsTable from '../components/RecordsTable'
+//import RecordsTable from '../components/RecordsTable'
 
 const DigitizedRecords = () => {
   const { user } = useAuth();
@@ -17,7 +17,7 @@ const DigitizedRecords = () => {
       <div className="container-flex" style={{ fontSize: "24px" }}>
         <h3 className="pl-3">Digitized Records</h3>
         {fetchError && (<p>{fetchError}</p>)}
-        <RecordsTable recordType="digitized"/>
+        <DigitizedRecordsTable recordType="digitized"/>
       </div>
     </Panel>
 
