@@ -13,6 +13,12 @@ export function ItemsContextProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
   const [recordType, setRecordType] = useState("");
+  const [user, setUser] = useState("");
+  const [email, setEmail] = useState("");
+  const [userRole, setUserRole] = useState("");
+  const [status, setStatus] = useState("");
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [selectedDepartmentVal, setSelectedDepartment] = useState([]);
 
   // https://github.com/orgs/supabase/discussions/1223
   const getPagination = (page, size) => {
@@ -24,37 +30,147 @@ export function ItemsContextProvider({ children }) {
     return { from, to }
   }
 
-  const getRecords = async (recordType) => {
+  // const getUserRole = async (user) => {
+  //   try {
+  //     let query = supabase
+  //       .from('user_roles')
+  //       .select('role')
+  //       .eq('user_id', user);
+
+  //     const { error, data } = await query
+
+  //     if (error) throw error;
+  //     if (data) {
+  //       //setUserRole(data[0].role);
+  //       return data[0].role;
+  //     }
+
+  //   } catch (error) {
+  //     console.log(error.error_description || error.message);
+  //   }
+  // };
+
+  const getUserDepartment = async (email) => {
+    try {
+      let query = supabase
+        .from('profiles')
+        .select('department')
+        .eq('email', email)
+        .single();
+
+      const { error, data } = await query
+
+      if (error) throw error;
+      if (data) {
+        // setUserRole(data[0].role);
+        console.log(data);
+        return data;
+      }
+
+    } catch (error) {
+      console.log(error.error_description || error.message);
+    }
+  };
+
+  const getStatus = async () => {
+    try {
+      let query = supabase
+        .from('status')
+        .select('id,status');
+
+      const { error, data } = await query
+
+      if (error) throw error;
+      if (data) return data;
+
+    } catch (error) {
+      console.log(error.error_description || error.message);
+    }
+  };
+
+  const getDepartment = async () => {
+    try {
+      let query = supabase
+        .from('department')
+        .select('id,department');
+
+      const { error, data } = await query
+
+      if (error) throw error;
+      if (data) {
+        setDepartmentOptions(data);
+        return data;
+      }
+
+    } catch (error) {
+      console.log(error.error_description || error.message);
+    }
+  };
+
+  const getRecords = async (recordType, user, email, userRole, lazyState) => {
     const { from, to } = getPagination(first, rows);
     setLoading(true);
+
+    const { filters } = lazyState;
+    // const role = await getUserRole(user);
+
+
     try {
 
       let query = supabase
         .from('records')
         .select('id,box_location,box_content,record_title,department,row,status', { count: 'exact' });
 
-      if (recordType === "all") {
-        query = query.range(from, to);
-        query = query.order("id", { ascending: false });
+      // Apply filters based on the "filters" argument
+      if (filters) {
+        Object.entries(filters).forEach(([field, filterValue]) => {
+          if (field === 'record_title' || field === 'box_location' || field === 'box_content' || field === 'row') {
+            // console.log("filterValue1: " + field + filterValue.value );
+            query = query.ilike(field, `%${filterValue.value}%`); // Case-insensitive like search
+          } 
+        });
       }
-      else if (recordType === "disposed") {
-        query = query.eq('status', 'Disposed');
-        query = query.range(from, to);
-        query = query.order("id", { ascending: false });
+
+      // console.log("email: "+email);
+      // console.log("userRole: "+userRole);
+
+      if (userRole === 'user') {
+          const userDepartment = await getUserDepartment(email);
+          // console.log("department: " + userDepartment.department);
+          query = query.eq("department",userDepartment.department)
       }
-      else if (recordType === "digitized") {
-        query = query.eq('status', 'Digitized');
-        query = query.range(from, to);
-        query = query.order("id", { ascending: false });
-      }
+
+      query = query.range(from, to);
+      query = query.order("id", { ascending: false });
 
       const { error, data, count } = await query
 
       if (error) throw error;
 
-      if (data) setRecords(data);
+      // Fetch status and department descriptions
+      const statuses = await getStatus();
+      const departmentValues = await getDepartment();
+      // setDepartmentOptions(departmentValues);
+      // console.log(statuses, departmentValues);
+
+      // Create a map of id to description
+      const statusMap = Object.fromEntries(statuses.map(s => [s.id, s.status]));
+      const departmentMap = Object.fromEntries(departmentValues.map(d => [d.id, d.department]));
+
+      // Replace id with description in records
+      const updatedRecords = data.map(record => ({
+        ...record,
+        status: statusMap[record.status] || 'Unknown',  // Use 'Unknown' if status not found
+        department: departmentMap[record.department] || 'Unknown'
+      }));
+
+
+      setRecords(updatedRecords);
+      //console.log(updatedRecords);
 
       if (count) setRecordsCount(count);
+
+      return data;
 
     } catch (error) {
       alert(error.error_description || error.message);
@@ -192,6 +308,18 @@ export function ItemsContextProvider({ children }) {
         setFirst,
         recordType,
         setRecordType,
+        user,
+        setUser,
+        status,
+        setStatus,
+        departmentOptions,
+        setDepartmentOptions,
+        selectedDepartmentVal,
+        setSelectedDepartment,
+        email,
+        setEmail,
+        userRole,
+        setUserRole
       }}
     >
       {children}
