@@ -14,7 +14,11 @@ export function DisposedRecordContextProvider({ children }) {
   const [adding, setAdding] = useState(false);
   const [recordType, setRecordType] = useState("");
   const [user, setUser] = useState("");
+  const [email, setEmail] = useState("");
   const [userRole, setUserRole] = useState("");
+  const [status, setStatus] = useState("");
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [selectedDepartmentVal, setSelectedDepartment] = useState([]);
 
   // https://github.com/orgs/supabase/discussions/1223
   const getPagination = (page, size) => {
@@ -26,19 +30,50 @@ export function DisposedRecordContextProvider({ children }) {
     return { from, to }
   }
 
-  const getUserRole = async (user) => {
+  // const getUserRole = async (user) => {
+  //   try {
+  //     let query = supabase
+  //       .from('user_roles')
+  //       .select('role')
+  //       .eq('user_id', user);
+
+  //     const { error, data } = await query
+
+  //     if (error) throw error;
+  //     if (data) {
+  //       //setUserRole(data[0].role);
+  //       return data[0].role;
+  //     }
+
+  //   } catch (error) {
+  //     console.log(error.error_description || error.message);
+  //   }
+  // };
+
+
+
+  const getUserDepartment = async (email) => {
+
+    // const role = await getUserRole(user);
+    // console.log("role: " + role );
+
+
     try {
+
       let query = supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user);
+        .from('profiles')
+        .select('department')
+        .eq('email', email)
+        .single();
 
       const { error, data } = await query
 
       if (error) throw error;
+
       if (data) {
-        setUserRole(data[0].role);
-        return data[0].role;
+        console.log(data);
+        return data;
+        //console.log(myObjStr);
       }
 
     } catch (error) {
@@ -46,41 +81,82 @@ export function DisposedRecordContextProvider({ children }) {
     }
   };
 
-  const getRecords = async (recordType, user) => {
+  const getStatus = async () => {
+    try {
+      let query = supabase
+        .from('status')
+        .select('id,status');
+
+      const { error, data } = await query
+      if (error) throw error;
+      if (data) return data;
+    } catch (error) {
+      console.log(error.error_description || error.message);
+    }
+  };
+  const getDepartment = async () => {
+    try {
+      let query = supabase
+        .from('department')
+        .select('id,department');
+      const { error, data } = await query
+      if (error) throw error;
+      if (data) {
+        setDepartmentOptions(data);
+      return data;
+      }
+
+    } catch (error) {
+      console.log(error.error_description || error.message);
+    }
+  };
+
+  const getRecords = async (recordType, user, email, userRole, lazyState) => {
     const { from, to } = getPagination(first, rows);
     setLoading(true);
-
-    // const role = await getUserRole(user);
-    // console.log("role: " + role );
-
-    const rtype = await recordType;
-    console.log("rtype: " + rtype);
-
+    const { filters } = lazyState;
     try {
 
       let query = supabase
         .from('records')
         .select('id,box_location,box_content,record_title,department,row,status', { count: 'exact' });
 
+      // Apply filters based on the "filters" argument
+      if (filters) {
+        Object.entries(filters).forEach(([field, filterValue]) => {
+          if (field === 'record_title' || field === 'box_location' || field === 'box_content' || field === 'row') {
+            query = query.ilike(field, `%${filterValue.value}%`); // Case-insensitive like search
+          }
+        });
+      }
+      if (userRole === 'user') {
+        const userDepartment = await getUserDepartment(email);
+        // console.log("department: " + userDepartment.department);
+        query = query.eq("department", userDepartment.department)
+      }
+      
       query = query.eq('status', '3');
-      query = query.range(from, to);
-      query = query.order("id", { ascending: false });
+        query = query.range(from, to);
+        query = query.order("id", { ascending: false });
 
       const { error, data, count } = await query
 
       if (error) throw error;
 
-      if (data) {
-        setRecords(data);
-        //const myObjStr = JSON.stringify(data);
-        //console.log(myObjStr);
-      }
-
+      const statuses = await getStatus();
+      const departmentValues = await getDepartment();
+      const statusMap = Object.fromEntries(statuses.map(s => [s.id, s.status]));
+      const departmentMap = Object.fromEntries(departmentValues.map(d => [d.id, d.department]));
+      const updatedRecords = data.map(record => ({
+        ...record,
+        status: statusMap[record.status] || 'Unknown',  // Use 'Unknown' if status not found
+        department: departmentMap[record.department] || 'Unknown'
+      }));
+      setRecords(updatedRecords);
 
       if (count) setRecordsCount(count);
 
       return data;
-
     } catch (error) {
       alert(error.error_description || error.message);
     } finally {
@@ -88,54 +164,7 @@ export function DisposedRecordContextProvider({ children }) {
     }
   };
 
-  /*const getRecords = async (recordType) => {
-    const { from, to } = getPagination(first, rows);
-    setLoading(true);
-    try {
 
-      let query = supabase
-        .from('records')
-        .select('id,box_location,box_content,record_title,department,row,status', { count: 'exact' });
-
-      if (recordType === "all") {
-        query = query.range(from, to);
-        query = query.order("id", { ascending: false });
-      }
-      else if (recordType === "disposed") {
-        query = query.eq('status', 'Disposed');
-        query = query.range(from, to);
-        query = query.order("id", { ascending: false });
-      }
-      else if (recordType === "digitized") {
-        query = query.eq('status', 'Digitized');
-        query = query.range(from, to);
-        query = query.order("id", { ascending: false });
-      }
-
-      const { error, data, count } = await query
-
-      if (error) throw error;
-
-      if (data) setRecords(data);
-
-      if (count) setRecordsCount(count);
-
-    } catch (error) {
-      alert(error.error_description || error.message);
-    } finally {
-      setLoading(false);
-    }
-  };*/
-
-  const getRecordsByFilter = async (params) => {
-    const queryParams = params
-      ? Object.keys(params)
-        .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
-        .join('&')
-      : '';
-
-    return fetch('https://www.primefaces.org/data/customers?' + queryParams).then((res) => res.json());
-  }
 
   // delete row from the database
   const deleteRecord = async (id) => {
@@ -268,6 +297,16 @@ export function DisposedRecordContextProvider({ children }) {
         setRecordType,
         user,
         setUser,
+        status,
+        setStatus,
+        departmentOptions,
+        setDepartmentOptions,
+        selectedDepartmentVal,
+        setSelectedDepartment,
+        email,
+        setEmail,
+        userRole,
+        setUserRole
       }}
     >
       {children}

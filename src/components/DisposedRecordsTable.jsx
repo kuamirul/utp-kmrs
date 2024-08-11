@@ -8,17 +8,21 @@ import { Toolbar } from 'primereact/toolbar';
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
 import { RadioButton } from 'primereact/radiobutton';
+import { OverlayPanel } from 'primereact/overlaypanel';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
+import { InputNumber } from 'primereact/inputnumber';
+import { DataScroller } from 'primereact/datascroller';
 import { Dropdown } from 'primereact/dropdown';
 import 'primereact/resources/themes/tailwind-light/theme.css';
 import 'primeicons/primeicons.css';
+
 import { DisposedRecordContext } from "../services/DisposedRecordService";
 
 
-export default function disposedRecordsTable({ recordType,user}) {
+export default function disposedRecordsTable({ recordType, user, email, userRole }) {
 
-  const { getRecords, recordsList, recordsCount, setRecordType, setUser } = useContext(DisposedRecordContext);
+  const { getRecords, recordsList, recordsCount, setRecordType, setUser, departmentOptions, setEmail, setUserRole } = useContext(DisposedRecordContext);
 
   let emptyRecord = {
     id: null,
@@ -87,8 +91,19 @@ export default function disposedRecordsTable({ recordType,user}) {
     }
   };
 
+  const findDepartmentId = (departmentName) => {
+    const foundDepartment = departmentOptions.find(dept => dept.department === departmentName);
+    return foundDepartment ? foundDepartment.id : null; // Handle case where department is not found
+  };
+  const findStatusId = (statusName) => {
+    return statusLookup[statusName] || null; // Handle case where status is not found
+  };
   const editRecord = (record) => {
-    setRecord({ ...record });
+    // setRecord({ ...record });
+    const updatedRecord = { ...record };
+    updatedRecord.department = findDepartmentId(record.department);
+    updatedRecord.status = findStatusId(record.status);
+    setRecord(updatedRecord);
     setRecordDialog(true);
   };
 
@@ -160,10 +175,18 @@ export default function disposedRecordsTable({ recordType,user}) {
 
   const onStatusChange = (e) => {
     let _record = { ...record };
-    _record['status'] = e.value;
+    // _record['status'] = e.value;
+    _record['status'] = statusLookup[e.value];  //statusLookup is an object, not an array. access the ID directly using property notation. .find method will not work 
     setRecord(_record);
   };
 
+  const statusLookup = {
+    Active: 1,
+    Digitized: 2,
+    Disposed: 3,
+    Inactive: 4,
+    KIV: 5
+  };
   const onInputChange = (e, name) => {
     const val = (e.target && e.target.value) || '';
     let _record = { ...record };
@@ -184,11 +207,6 @@ export default function disposedRecordsTable({ recordType,user}) {
     return (
       <div className="flex flex-wrap gap-2">
         <Button label="Export" icon="pi pi-upload" className="p-button-help" onClick={exportCSV} />
-        <IconField iconPosition="left">
-          <InputIcon className="pi pi-search" />
-          <InputText type="search" onInput={(e) => setGlobalFilter(e.target.value)} placeholder="Search..." />
-        </IconField>
-        <Button label="Submit" />
       </div>
     )
   };
@@ -202,35 +220,6 @@ export default function disposedRecordsTable({ recordType,user}) {
     );
   };
 
-  const [statuses] = useState(['Active', 'Disposed', 'Digitized', 'Inactive', 'KIV']);
-  const [selectedStatus, setSelectedStatus] = useState(null);
-
-  const statusBodyTemplate = (rowData) => {
-    return <Tag value={rowData.status} severity={getStatus(rowData)}></Tag>;
-  };
-
-  const getStatus = (record) => {
-    switch (record.status) {
-      case 'Active':
-        return 'Active';
-
-      case 'Digitized':
-        return 'Digitized';
-
-      case 'Disposed':
-        return 'Disposed';
-
-      case 'Inactive':
-        return 'Inactive';
-
-      case 'KIV':
-        return 'KIV';
-
-      default:
-        return null;
-    }
-  };
-
   const header = (
     <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
       <h4 className="m-0">Manage Records</h4>
@@ -241,18 +230,7 @@ export default function disposedRecordsTable({ recordType,user}) {
     </div>
   );
 
-  const onRowEditComplete = (e) => {
-    let _records = [...records];
-    let { newData, index } = e;
 
-    _records[index] = newData;
-
-    setRecords(_records);
-  };
-
-  const textEditor = (options) => {
-    return <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />;
-  };
 
 
   // https://stackblitz.com/run?file=src%2Fservice%2FCustomerService.jsx,src%2FApp.jsx
@@ -280,6 +258,8 @@ export default function disposedRecordsTable({ recordType,user}) {
   useEffect(() => {
     setRecordType(recordType);
     setUser(user);
+    setEmail(email);
+    setUserRole(userRole);
     loadLazyData();
   }, [lazyState]);
 
@@ -296,15 +276,15 @@ export default function disposedRecordsTable({ recordType,user}) {
 
     //console.log(user);
 
-    getRecords({ lazyEvent: JSON.stringify(lazyState) }, user).then((data) => {
-      setTotalRecords(data.totalRecords);
+    getRecords({ lazyEvent: JSON.stringify(lazyState) }, user, email, userRole, lazyState).then((data) => {
+      // setTotalRecords(data.totalRecords);
       //setCustomers(data.customers);
       setLoading(false);
     });
 
   };
 
-  const { setRows, setFirst } = useContext(DisposedRecordContext);
+  const { setRows, setFirst, selectedDepartmentVal, setSelectedDepartment } = useContext(DisposedRecordContext);
 
   const onPage = (event) => {
     setlazyState(event);
@@ -322,26 +302,19 @@ export default function disposedRecordsTable({ recordType,user}) {
     setlazyState(event);
   };
 
-  const onSelectionChange = (event) => {
-    const value = event.value;
+  const op = useRef(null);
 
-    setSelectedCustomers(value);
-    setSelectAll(value.length === totalRecords);
+  const onDepartmentSelect = (e) => {
+    setSelectedDepartment(e.value);
+    setRecord({ ...record, department: e.value.id }); // Assign selected department's id to record.department
+    op.current.hide();
   };
 
-  const onSelectAllChange = (event) => {
-    const selectAll = event.checked;
-
-    if (selectAll) {
-      CustomerService.getCustomers().then((data) => {
-        setSelectAll(true);
-        setSelectedCustomers(data.customers);
-      });
-    } else {
-      setSelectAll(false);
-      setSelectedCustomers([]);
+  const getVal = () => {
+    console.log(selectedRecords?.[0]?.id);
+    setRecord({ ...record, department: selectedRecords?.[0]?.id });
+    return selectedRecords?.[0]?.id;
     }
-  };
 
   return (
 
@@ -362,20 +335,14 @@ export default function disposedRecordsTable({ recordType,user}) {
           {/* <Column field="id" header="#" sortable ></Column> */}
           <Column field="record_title" header="Record Title" sortable filter filterPlaceholder="Search" style={{ minWidth: '16rem' }}></Column>
           <Column field="box_location" header="Box Location" filter filterPlaceholder="Search" sortable ></Column>
-          <Column field="department" header="Department" sortable filter filterPlaceholder="Search" style={{ minWidth: '8rem' }}></Column>
+          <Column field="department" header="Department" sortable style={{ minWidth: '8rem' }}></Column>
           <Column field="box_content" header="Box Content" sortable filter filterPlaceholder="Search" style={{ minWidth: '10rem' }}></Column>
           <Column field="row" header="Row" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="status" header="Status" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="status" header="Status" sortable style={{ minWidth: '12rem' }}></Column>
           <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '12rem' }}></Column>
           {/*<Column rowEditor={allowEdit} headerStyle={{ width: '10%', minWidth: '8rem' }} bodyStyle={{ textAlign: 'center' }}></Column> */}
         </DataTable>
 
-        {/* https://primereact.org/datatable/#lazy_load */}
-        {/* value={customers} lazy filterDisplay="row" dataKey="id" paginator
-            first={lazyState.first} rows={10} totalRecords={totalRecords} onPage={onPage}
-            onSort={onSort} sortField={lazyState.sortField} sortOrder={lazyState.sortOrder}
-            onFilter={onFilter} filters={lazyState.filters} loading={loading} tableStyle={{ minWidth: '75rem' }}
-            selection={selectedCustomers} onSelectionChange={onSelectionChange} selectAll={selectAll} onSelectAllChange={onSelectAllChange} */}
 
       </div>
 
@@ -395,7 +362,14 @@ export default function disposedRecordsTable({ recordType,user}) {
 
           <div className="field">
             <label htmlFor="department" className="font-bold">Department</label>
-            <InputText id="department" value={record.department} onChange={(e) => onInputChange(e, 'department')} required autoFocus className={classNames({ 'p-invalid': submitted && !record.department })} />
+            <InputNumber id="department" value={record.department} onChange={(e) => onInputChange(e, 'department')} required showButtons min={0} max={100} autoFocus className={classNames({ 'p-invalid': submitted && !record.department })} />
+            <Button type="button" label="List of Departments" icon="pi pi-search" outlined onClick={(e) => op.current.toggle(e)} />
+            <OverlayPanel ref={op} showCloseIcon closeOnEscape dismissable>
+                    <DataTable value={departmentOptions} dataKey="id" selectionMode="single" selection={selectedDepartmentVal} onSelectionChange={onDepartmentSelect} >
+                        <Column field="id" header="ID" />
+                        <Column field="department" header="Description"  />
+                    </DataTable>
+            </OverlayPanel>
           </div>
 
           <div className="field">
@@ -434,21 +408,7 @@ export default function disposedRecordsTable({ recordType,user}) {
             </div>
           </div>
 
-          {/* <div className="field">
-                    <label className="mb-3 font-bold">Status</label>
-                        <div className="formgrid grid">
-                        <Dropdown
-                            value={getStatus(record.status)}
-                            options={statuses}
                             //onChange={(e) => record.editorCallback(e.value)}
-                            onChange={(e) => setSelectedStatus(e.value)}
-                            placeholder="Select a Status"
-                            itemTemplate={(record) => {
-                                return <Tag value={record} severity={getStatus(record)}></Tag>;
-                            }}
-                        />
-                        </div>
-                    </div> */}
 
           <div className="p-dialog-footer pb-0">
             {/* <Button label="Submit" type="submit" className="p-button-rounded p-button-success mr-2 mb-2" /> */}
