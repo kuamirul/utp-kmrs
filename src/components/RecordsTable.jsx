@@ -8,26 +8,29 @@ import { Toolbar } from 'primereact/toolbar';
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
 import { RadioButton } from 'primereact/radiobutton';
+import { OverlayPanel } from 'primereact/overlaypanel';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
+import { InputNumber } from 'primereact/inputnumber';
+import { DataScroller } from 'primereact/datascroller';
 import { Dropdown } from 'primereact/dropdown';
 import 'primereact/resources/themes/tailwind-light/theme.css';
 import 'primeicons/primeicons.css';
 import { ItemsContext } from "../services/RecordService";
 
 
-export default function recordsTable({ recordType }) {
+export default function recordsTable({ recordType, user, email, userRole }) {
 
-  const { getRecords, recordsList, recordsCount, setRecordType } = useContext(ItemsContext);
+  const { getRecords, recordsList, recordsCount, setRecordType, setUser, departmentOptions, setEmail, setUserRole } = useContext(ItemsContext);
 
   let emptyRecord = {
     id: null,
     record_title: '',
     box_location: '',
-    department: '',
+    department: 0,
     box_content: '',
     row: '',
-    status: ''
+    status: 0
   };
 
   const [records, setRecords] = useState(null);
@@ -87,8 +90,30 @@ export default function recordsTable({ recordType }) {
     }
   };
 
+  const findDepartmentId = (departmentName) => {
+    const foundDepartment = departmentOptions.find(dept => dept.department === departmentName);
+    return foundDepartment ? foundDepartment.id : null; // Handle case where department is not found
+  };
+
+  const findStatusId = (statusName) => {
+    // Access the ID directly using property notation
+    return statusLookup[statusName] || null; // Handle case where status is not found
+  };
+  
+  // const editRecord = (record) => {
+  //   const updatedRecord = { ...record };
+  //   updatedRecord.department = findDepartmentId(record.department);
+  //   setRecord(updatedRecord);
+  //   setRecordDialog(true);
+  // };
+
   const editRecord = (record) => {
-    setRecord({ ...record });
+    // setRecord({ ...record });
+    const updatedRecord = { ...record };
+    updatedRecord.department = findDepartmentId(record.department);
+    updatedRecord.status = findStatusId(record.status);
+    // console.log(updatedRecord);
+    setRecord(updatedRecord);
     setRecordDialog(true);
   };
 
@@ -160,10 +185,19 @@ export default function recordsTable({ recordType }) {
 
   const onStatusChange = (e) => {
     let _record = { ...record };
-    _record['status'] = e.value;
+    // _record['status'] = e.value;
+    _record['status'] = statusLookup[e.value];  //statusLookup is an object, not an array. access the ID directly using property notation. .find method will not work 
     setRecord(_record);
   };
 
+  const statusLookup = {
+    Active: 1,
+    Digitized: 2,
+    Disposed: 3,
+    Inactive: 4,
+    KIV: 5
+  };
+  
   const onInputChange = (e, name) => {
     const val = (e.target && e.target.value) || '';
     let _record = { ...record };
@@ -181,7 +215,11 @@ export default function recordsTable({ recordType }) {
   };
 
   const rightToolbarTemplate = () => {
-    return <Button label="Export" icon="pi pi-upload" className="p-button-help" onClick={exportCSV} />;
+    return (
+      <div className="flex flex-wrap gap-2">
+        <Button label="Export" icon="pi pi-upload" className="p-button-help" onClick={exportCSV} />
+      </div>
+    )
   };
 
   const actionBodyTemplate = (rowData) => {
@@ -193,35 +231,6 @@ export default function recordsTable({ recordType }) {
     );
   };
 
-  const [statuses] = useState(['Active', 'Disposed', 'Digitized', 'Inactive', 'KIV']);
-  const [selectedStatus, setSelectedStatus] = useState(null);
-
-  const statusBodyTemplate = (rowData) => {
-    return <Tag value={rowData.status} severity={getStatus(rowData)}></Tag>;
-  };
-
-  const getStatus = (record) => {
-    switch (record.status) {
-      case 'Active':
-        return 'Active';
-
-      case 'Digitized':
-        return 'Digitized';
-
-      case 'Disposed':
-        return 'Disposed';
-
-      case 'Inactive':
-        return 'Inactive';
-
-      case 'KIV':
-        return 'KIV';
-
-      default:
-        return null;
-    }
-  };
-
   const header = (
     <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
       <h4 className="m-0">Manage Records</h4>
@@ -231,20 +240,6 @@ export default function recordsTable({ recordType }) {
       </IconField> */}
     </div>
   );
-
-  const onRowEditComplete = (e) => {
-    let _records = [...records];
-    let { newData, index } = e;
-
-    _records[index] = newData;
-
-    setRecords(_records);
-  };
-
-  const textEditor = (options) => {
-    return <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />;
-  };
-
 
   // https://stackblitz.com/run?file=src%2Fservice%2FCustomerService.jsx,src%2FApp.jsx
   const [loading, setLoading] = useState(false);
@@ -270,6 +265,9 @@ export default function recordsTable({ recordType }) {
 
   useEffect(() => {
     setRecordType(recordType);
+    setUser(user);
+    setEmail(email);
+    setUserRole(userRole);
     loadLazyData();
   }, [lazyState]);
 
@@ -279,14 +277,17 @@ export default function recordsTable({ recordType }) {
     if (networkTimeout) {
       clearTimeout(networkTimeout);
     }
-    // TODO EXPORT CONST RECORD FROM SERVICE
-    getRecords(recordType, { lazyEvent: JSON.stringify(lazyState) });
-    setTotalRecords(recordsCount);
-    setLoading(false);
+    //console.log(user);
+
+    getRecords({ lazyEvent: JSON.stringify(lazyState) }, user, email, userRole, lazyState).then((data) => {
+      // setTotalRecords(data.totalRecords);
+      //setSelectedDepartment(data.department);
+      setLoading(false);
+    });
 
   };
 
-  const { setRows, setFirst } = useContext(ItemsContext);
+  const { setRows, setFirst, selectedDepartmentVal, setSelectedDepartment } = useContext(ItemsContext);
 
   const onPage = (event) => {
     setlazyState(event);
@@ -304,26 +305,19 @@ export default function recordsTable({ recordType }) {
     setlazyState(event);
   };
 
-  const onSelectionChange = (event) => {
-    const value = event.value;
+  const op = useRef(null);
 
-    setSelectedCustomers(value);
-    setSelectAll(value.length === totalRecords);
+  const onDepartmentSelect = (e) => {
+    setSelectedDepartment(e.value);
+    setRecord({ ...record, department: e.value.id }); // Assign selected department's id to record.department
+    op.current.hide();
   };
 
-  const onSelectAllChange = (event) => {
-    const selectAll = event.checked;
-
-    if (selectAll) {
-      CustomerService.getCustomers().then((data) => {
-        setSelectAll(true);
-        setSelectedCustomers(data.customers);
-      });
-    } else {
-      setSelectAll(false);
-      setSelectedCustomers([]);
-    }
-  };
+  const getVal = () => {
+    console.log(selectedRecords?.[0]?.id);
+    setRecord({ ...record, department: selectedRecords?.[0]?.id });
+    return selectedRecords?.[0]?.id;
+  }
 
   return (
 
@@ -332,32 +326,25 @@ export default function recordsTable({ recordType }) {
       <div className="card">
         <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
-        <DataTable 
-          ref={dt} value={recordsList} dataKey="id" lazy
+        <DataTable
+          ref={(dt)} value={recordsList} dataKey="id" lazy
           selection={selectedRecords} onSelectionChange={(e) => setSelectedRecords(e.value)}
           paginator rows={10} rowsPerPageOptions={[5, 10, 25]} totalRecords={recordsCount} first={lazyState.first} onPage={onPage}
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records" 
-          onFilter={onFilter} filters={lazyState.filters}  filterDisplay="row" 
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records"
+          onFilter={onFilter} filters={lazyState.filters} filterDisplay="row"
           header={header}>
           <Column selectionMode="multiple" exportable={false}></Column>
           {/* <Column field="id" header="#" sortable ></Column> */}
           <Column field="record_title" header="Record Title" sortable filter filterPlaceholder="Search" style={{ minWidth: '16rem' }}></Column>
           <Column field="box_location" header="Box Location" filter filterPlaceholder="Search" sortable ></Column>
-          <Column field="department" header="Department" sortable filter filterPlaceholder="Search" style={{ minWidth: '8rem' }}></Column>
+          <Column field="department" header="Department" sortable style={{ minWidth: '8rem' }}></Column>
           <Column field="box_content" header="Box Content" sortable filter filterPlaceholder="Search" style={{ minWidth: '10rem' }}></Column>
           <Column field="row" header="Row" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="status" header="Status" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="status" header="Status" sortable style={{ minWidth: '12rem' }}></Column>
           <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '12rem' }}></Column>
           {/*<Column rowEditor={allowEdit} headerStyle={{ width: '10%', minWidth: '8rem' }} bodyStyle={{ textAlign: 'center' }}></Column> */}
         </DataTable>
-
-        {/* https://primereact.org/datatable/#lazy_load */}
-        {/* value={customers} lazy filterDisplay="row" dataKey="id" paginator
-            first={lazyState.first} rows={10} totalRecords={totalRecords} onPage={onPage}
-            onSort={onSort} sortField={lazyState.sortField} sortOrder={lazyState.sortOrder}
-            onFilter={onFilter} filters={lazyState.filters} loading={loading} tableStyle={{ minWidth: '75rem' }}
-            selection={selectedCustomers} onSelectionChange={onSelectionChange} selectAll={selectAll} onSelectAllChange={onSelectAllChange} */}
 
       </div>
 
@@ -377,7 +364,14 @@ export default function recordsTable({ recordType }) {
 
           <div className="field">
             <label htmlFor="department" className="font-bold">Department</label>
-            <InputText id="department" value={record.department} onChange={(e) => onInputChange(e, 'department')} required autoFocus className={classNames({ 'p-invalid': submitted && !record.department })} />
+            <InputNumber id="department" value={record.department} onChange={(e) => onInputChange(e, 'department')} required showButtons min={0} max={100} autoFocus className={classNames({ 'p-invalid': submitted && !record.department })} />
+            <Button type="button" label="List of Departments" icon="pi pi-search" outlined onClick={(e) => op.current.toggle(e)} />
+            <OverlayPanel ref={op} showCloseIcon closeOnEscape dismissable>
+                    <DataTable value={departmentOptions} dataKey="id" selectionMode="single" selection={selectedDepartmentVal} onSelectionChange={onDepartmentSelect} >
+                        <Column field="id" header="ID" />
+                        <Column field="department" header="Description"  />
+                    </DataTable>
+            </OverlayPanel>
           </div>
 
           <div className="field">
@@ -394,43 +388,27 @@ export default function recordsTable({ recordType }) {
             <label className="mb-3 font-bold">Status</label>
             <div className="formgrid grid">
               <div className="field-radiobutton col-6">
-                <RadioButton inputId="category1" name="category" value="Active" onChange={onStatusChange} checked={record.status === 'Active'} />
+                <RadioButton inputId="category1" name="category" value="Active" onChange={onStatusChange} checked={record.status === 1} />
                 <label htmlFor="category1">Active</label>
               </div>
               <div className="field-radiobutton col-6">
-                <RadioButton inputId="category2" name="category" value="Digitized" onChange={onStatusChange} checked={record.status === 'Digitized'} />
+                <RadioButton inputId="category2" name="category" value="Digitized" onChange={onStatusChange} checked={record.status === 2} />
                 <label htmlFor="category2">Digitized</label>
               </div>
               <div className="field-radiobutton col-6">
-                <RadioButton inputId="category3" name="category" value="Disposed" onChange={onStatusChange} checked={record.status === 'Disposed'} />
+                <RadioButton inputId="category3" name="category" value="Disposed" onChange={onStatusChange} checked={record.status === 3} />
                 <label htmlFor="category3">Disposed</label>
               </div>
               <div className="field-radiobutton col-6">
-                <RadioButton inputId="category4" name="category" value="Inactive" onChange={onStatusChange} checked={record.status === 'Inactive'} />
+                <RadioButton inputId="category4" name="category" value="Inactive" onChange={onStatusChange} checked={record.status === 4} />
                 <label htmlFor="category4">Inactive</label>
               </div>
               <div className="field-radiobutton col-6">
-                <RadioButton inputId="category4" name="category" value="KIV" onChange={onStatusChange} checked={record.status === 'KIV'} />
+                <RadioButton inputId="category4" name="category" value="KIV" onChange={onStatusChange} checked={record.status === 5} />
                 <label htmlFor="category4">KIV</label>
               </div>
             </div>
           </div>
-
-          {/* <div className="field">
-                    <label className="mb-3 font-bold">Status</label>
-                        <div className="formgrid grid">
-                        <Dropdown
-                            value={getStatus(record.status)}
-                            options={statuses}
-                            //onChange={(e) => record.editorCallback(e.value)}
-                            onChange={(e) => setSelectedStatus(e.value)}
-                            placeholder="Select a Status"
-                            itemTemplate={(record) => {
-                                return <Tag value={record} severity={getStatus(record)}></Tag>;
-                            }}
-                        />
-                        </div>
-                    </div> */}
 
           <div className="p-dialog-footer pb-0">
             {/* <Button label="Submit" type="submit" className="p-button-rounded p-button-success mr-2 mb-2" /> */}

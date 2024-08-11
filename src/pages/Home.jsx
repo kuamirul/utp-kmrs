@@ -10,6 +10,7 @@ const Home = () => {
   const { user } = useAuth();
   const [fetchError, setFetchError] = React.useState(null);
 
+  // Card ref:  https://refine.dev/blog/building-react-admin-panel-with-primereact-and-refine/#create-recentsales-component
   return (
     <Panel>
       <div className="container-flex" style={{ fontSize: "24px" }}>

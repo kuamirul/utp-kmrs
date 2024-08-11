@@ -9,14 +9,15 @@ import { Panel } from 'primereact/panel';
 // components
 import StaffList from '../components/StaffList'
 
-const Users = () => {
+const Staffs = () => {
   const { user } = useAuth();
   const [fetchError, setFetchError] = React.useState(null);
+  console.log(user);
 
   return (
     <Panel>
       <div className="container-flex" style={{ fontSize: "24px" }}>
-        <h3 className="pl-3">Staff List</h3>
+        <h3 className="pl-3">Staff List </h3>
         {fetchError && (<p>{fetchError}</p>)}
         <StaffList />
       </div>
@@ -25,4 +26,4 @@ const Users = () => {
   );
 };
 
-export default Users;
+export default Staffs;

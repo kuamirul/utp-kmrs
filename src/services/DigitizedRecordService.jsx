@@ -3,9 +3,9 @@ import { supabase } from "../supabaseClient";
 // import { recordType} from '../components/RecordsTable';
 
 // Initializing context
-export const ItemsContext = createContext();
+export const DigitizedRecordContext = createContext();
 
-export function ItemsContextProvider({ children }) {
+export function DigitizedRecordContextProvider({ children }) {
   const [recordsList, setRecords] = useState([]);
   const [recordsCount, setRecordsCount] = useState(0);
   const [first, setFirst] = useState(0);
@@ -50,8 +50,15 @@ export function ItemsContextProvider({ children }) {
   //   }
   // };
 
+
+
   const getUserDepartment = async (email) => {
+
+    // const role = await getUserRole(user);
+    // console.log("role: " + role );
+
     try {
+
       let query = supabase
         .from('profiles')
         .select('department')
@@ -61,10 +68,11 @@ export function ItemsContextProvider({ children }) {
       const { error, data } = await query
 
       if (error) throw error;
+
       if (data) {
-        // setUserRole(data[0].role);
         console.log(data);
         return data;
+        //console.log(myObjStr);
       }
 
     } catch (error) {
@@ -79,23 +87,18 @@ export function ItemsContextProvider({ children }) {
         .select('id,status');
 
       const { error, data } = await query
-
       if (error) throw error;
       if (data) return data;
-
     } catch (error) {
       console.log(error.error_description || error.message);
     }
   };
-
   const getDepartment = async () => {
     try {
       let query = supabase
         .from('department')
         .select('id,department');
-
       const { error, data } = await query
-
       if (error) throw error;
       if (data) {
         setDepartmentOptions(data);
@@ -110,11 +113,7 @@ export function ItemsContextProvider({ children }) {
   const getRecords = async (recordType, user, email, userRole, lazyState) => {
     const { from, to } = getPagination(first, rows);
     setLoading(true);
-
     const { filters } = lazyState;
-    // const role = await getUserRole(user);
-
-
     try {
 
       let query = supabase
@@ -125,21 +124,17 @@ export function ItemsContextProvider({ children }) {
       if (filters) {
         Object.entries(filters).forEach(([field, filterValue]) => {
           if (field === 'record_title' || field === 'box_location' || field === 'box_content' || field === 'row') {
-            // console.log("filterValue1: " + field + filterValue.value );
             query = query.ilike(field, `%${filterValue.value}%`); // Case-insensitive like search
-          } 
+          }
         });
       }
-
-      // console.log("email: "+email);
-      // console.log("userRole: "+userRole);
-
       if (userRole === 'user') {
-          const userDepartment = await getUserDepartment(email);
-          // console.log("department: " + userDepartment.department);
-          query = query.eq("department",userDepartment.department)
+        const userDepartment = await getUserDepartment(email);
+        // console.log("department: " + userDepartment.department);
+        query = query.eq("department", userDepartment.department)
       }
-
+      
+      query = query.eq('status', '2');
       query = query.range(from, to);
       query = query.order("id", { ascending: false });
 
@@ -147,37 +142,28 @@ export function ItemsContextProvider({ children }) {
 
       if (error) throw error;
 
-      // Fetch status and department descriptions
       const statuses = await getStatus();
       const departmentValues = await getDepartment();
-      // setDepartmentOptions(departmentValues);
-      // console.log(statuses, departmentValues);
-
-      // Create a map of id to description
       const statusMap = Object.fromEntries(statuses.map(s => [s.id, s.status]));
       const departmentMap = Object.fromEntries(departmentValues.map(d => [d.id, d.department]));
-
-      // Replace id with description in records
       const updatedRecords = data.map(record => ({
         ...record,
         status: statusMap[record.status] || 'Unknown',  // Use 'Unknown' if status not found
         department: departmentMap[record.department] || 'Unknown'
       }));
-
-
       setRecords(updatedRecords);
-      //console.log(updatedRecords);
 
       if (count) setRecordsCount(count);
 
       return data;
-
     } catch (error) {
       alert(error.error_description || error.message);
     } finally {
       setLoading(false);
     }
   };
+
+
 
   // delete row from the database
   const deleteRecord = async (id) => {
@@ -293,7 +279,7 @@ export function ItemsContextProvider({ children }) {
   };
 
   return (
-    <ItemsContext.Provider
+    <DigitizedRecordContext.Provider
       value={{
         loading,
         adding,
@@ -323,6 +309,6 @@ export function ItemsContextProvider({ children }) {
       }}
     >
       {children}
-    </ItemsContext.Provider>
+    </DigitizedRecordContext.Provider>
   );
 }

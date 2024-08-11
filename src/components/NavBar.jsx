@@ -4,9 +4,11 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthProvider";
+import { useAdmin } from "../context/AdminProvider";
 
 const NavBar = () => {
   const { auth, signOut } = useAuth();
+  const { userRole  } = useAdmin();
 
   const handleLogout = async (e) => {
     e.preventDefault();
@@ -45,7 +47,7 @@ const NavBar = () => {
                 Request List
               </Nav.Link>
             )}
-            {auth && (
+            {auth && userRole === 'admin' && (
               <Nav.Link as={Link} to="/user-details">
                 User Details
               </Nav.Link>
