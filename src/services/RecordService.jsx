@@ -165,7 +165,7 @@ export function ItemsContextProvider({ children }) {
       }));
 
 
-      setRecords(updatedRecords);
+      if (data) setRecords(updatedRecords);
       //console.log(updatedRecords);
 
       if (count) setRecordsCount(count);
