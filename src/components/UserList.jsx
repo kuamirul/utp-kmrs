@@ -10,24 +10,27 @@ import { InputIcon } from 'primereact/inputicon';
 import { RadioButton } from 'primereact/radiobutton';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
+import { OverlayPanel } from 'primereact/overlaypanel';
+import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
 import 'primereact/resources/themes/tailwind-light/theme.css';
 import 'primeicons/primeicons.css';
 import { UsersContext } from "../services/UserService";
 
 
-export default function UserList() {
+export default function UserList({userRole}) {
 
-  const { getAllUsers, allUsers, usersCount } = useContext(UsersContext);
+  const { getAllUsers, allUsers, usersCount, departmentOptions, selectedDepartmentVal, setSelectedDepartment, setUserRole } = useContext(UsersContext);
 
   let emptyUser = {
     id: null,
     full_name: '',
-    company: '',
-    job_title: '',
+    department: 0,
     business_phone: '',
     email: '',
-    status: ''
+    user_roles: {
+      value: "user" 
+    }
   };
 
   const [users, setUsers] = useState(null);
@@ -247,6 +250,7 @@ export default function UserList() {
 
   useEffect(() => {
     loadLazyData();
+    setUserRole(userRole);
   }, [lazyState]);
 
   const loadLazyData = () => {
@@ -262,7 +266,7 @@ export default function UserList() {
 
   };
 
-  const { setRows, setFirst } = useContext(UsersContext);
+  const { setRows, setFirst} = useContext(UsersContext);
 
   const onPage = (event) => {
     setlazyState(event);
@@ -301,7 +305,17 @@ export default function UserList() {
     }
   };
 
+  const op = useRef(null);
+
+  const onDepartmentSelect = (e) => {
+    setSelectedDepartment(e.value);
+    setUser({ ...user, department: e.value.id }); // Assign selected department's id to record.department
+    op.current.hide();
+  };
+
   return (
+
+    //  TODO: repalce job title with department
 
     <div>
       <Toast ref={toast} />
@@ -315,11 +329,10 @@ export default function UserList() {
           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records" globalFilter={globalFilter} header={header}>
           <Column selectionMode="multiple" exportable={false}></Column>
           <Column field="full_name" header="Name" sortable style={{ minWidth: '16rem' }}></Column>
-          <Column field="company" header="Company" sortable ></Column>
-          <Column field="job_title" header="Title" sortable style={{ minWidth: '8rem' }}></Column>
+          <Column field="department" header="Department" sortable style={{ minWidth: '8rem' }}></Column>
           <Column field="business_phone" header="Phone Number" sortable style={{ minWidth: '10rem' }}></Column>
           <Column field="email" header="Email" sortable style={{ minWidth: '12rem' }}></Column>
-          <Column field="address" header="Address" sortable style={{ minWidth: '12rem' }}></Column>
+          <Column field="user_roles.role" header="Role" sortable style={{ minWidth: '12rem' }}></Column>
           <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '12rem' }}></Column>
           {/*<Column rowEditor={allowEdit} headerStyle={{ width: '10%', minWidth: '8rem' }} bodyStyle={{ textAlign: 'center' }}></Column> */}
         </DataTable>
@@ -336,13 +349,15 @@ export default function UserList() {
           </div>
 
           <div className="field">
-            <label htmlFor="company" className="font-bold">Company</label>
-            <InputText id="company" value={user.company} onChange={(e) => onInputChange(e, 'company')} autoFocus className={classNames({ 'p-invalid': submitted && !user.company })} />
-          </div>
-
-          <div className="field">
-            <label htmlFor="job_title" className="font-bold">Position</label>
-            <InputText id="job_title" value={user.job_title} onChange={(e) => onInputChange(e, 'job_title')} autoFocus className={classNames({ 'p-invalid': submitted && !user.job_title })} />
+            <label htmlFor="department" className="font-bold">Department</label>
+            <InputNumber id="department" value={user.department} onChange={(e) => onInputChange(e, 'department')} required showButtons min={0} max={100} autoFocus className={classNames({ 'p-invalid': submitted && !user.department })} />
+            <Button type="button" label="List of Departments" icon="pi pi-search" outlined onClick={(e) => op.current.toggle(e)} />
+            <OverlayPanel ref={op} showCloseIcon closeOnEscape dismissable>
+                    <DataTable value={departmentOptions} dataKey="id" selectionMode="single" selection={selectedDepartmentVal} onSelectionChange={onDepartmentSelect} >
+                        <Column field="id" header="ID" />
+                        <Column field="department" header="Description"  />
+                    </DataTable>
+            </OverlayPanel>
           </div>
 
           <div className="field">
@@ -356,8 +371,8 @@ export default function UserList() {
           </div>
 
           <div className="field">
-            <label htmlFor="address" className="font-bold">Address</label>
-            <InputText id="address" value={user.address} onChange={(e) => onInputChange(e, 'address')} autoFocus className={classNames({ 'p-invalid': submitted && !user.address })} />
+            <label htmlFor="role" className="font-bold">Role</label>
+            <InputText id="role" value={user.user_roles.value} disabled autoFocus defaultValue="user" />
           </div>
 
           <div className="p-dialog-footer pb-0">

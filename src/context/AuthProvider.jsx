@@ -21,6 +21,7 @@ const updatePassword = (updatedPassword) =>
 const AuthProvider = ({ children }) => {
   const [auth, setAuth] = useState(false);
   const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,11 +34,30 @@ const AuthProvider = ({ children }) => {
       setLoading(false);
     };
     getUser();
+
+    const getUserRole = async (userId) => {
+      try {
+        const { data, error } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId)
+          .single();
+  
+        if (error) throw error;
+        if (data) setUserRole(data.role);
+        console.log(data);
+      } catch (error) {
+        console.error('Error fetching user role:', error);
+      }
+    };
+
     const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event == "PASSWORD_RECOVERY") {
         setAuth(false);
       } else if (event === "SIGNED_IN") {
         setUser(session.user);
+        getUserRole(session.user.id);
+        // console.log(session.user);
         setAuth(true);
       } else if (event === "SIGNED_OUT") {
         setAuth(false);
@@ -54,6 +74,7 @@ const AuthProvider = ({ children }) => {
       value={{
         auth,
         user,
+        userRole,
         login,
         signOut,
         passwordReset,

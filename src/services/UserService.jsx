@@ -12,6 +12,9 @@ export function UsersContextProvider({ children }) {
   const [rows, setRows] = useState(10);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [selectedDepartmentVal, setSelectedDepartment] = useState([]);
+  const [userRole, setUserRole] = useState("");
 
   // https://github.com/orgs/supabase/discussions/1223
   const getPagination = (page, size) => {
@@ -28,16 +31,40 @@ export function UsersContextProvider({ children }) {
     setLoading(true);
     try {
 
-      const { error, data, count } = await supabase
-        .from('profiles')
-        .select('id,full_name,company,job_title,business_phone,email,address',{ count: 'exact'})
-        .order("id", { ascending: false });
+      let query = supabase
+      .from('profiles')
+      .select(`
+        id,
+        full_name,
+        department,
+        business_phone,
+        email,
+        user_roles!profiles_id_fkey1!inner (
+          role
+        )
+      `, { count: 'exact' })
+      .order("id", { ascending: false });
+            
+      const { error, data, count } = await query
+
+      const departmentValues = await getDepartment();
+      // console.log("department: " + userDepartment.department);
+      const departmentMap = Object.fromEntries(departmentValues.map(d => [d.id, d.department]));
+
+      // Replace id with description in records
+      const updatedUsers = data.map(user => ({
+        ...user,
+        department: departmentMap[user.department] || 0
+      }));
 
       if (error) throw error;
 
-      if (data) setAllUsers(data);
+      if (data) setAllUsers(updatedUsers);
+      //console.log(updatedUsers);
 
       if (count) setUsersCount(count);
+
+      return data;
 
     } catch (error) {
       alert(error.error_description || error.message);
@@ -81,7 +108,7 @@ export function UsersContextProvider({ children }) {
     setAdding(true);
     try {
       console.log("user before fetch: ", user);
-      //.select('id,full_name,company,job_title,business_phone,email,address',{ count: 'exact'})
+      //.select('id,full_name,company,department,business_phone,email,address',{ count: 'exact'})
       if ((user.id) && (user.id != null)) {
         console.log("Calling update query", user);
         const { error } = await supabase
@@ -89,11 +116,9 @@ export function UsersContextProvider({ children }) {
           .update([
             {
               full_name: user.full_name,
-              company: user.company,
-              job_title: user.job_title,
+              department: user.department,
               business_phone: user.business_phone,
               email: user.email,
-              address: user.address
             },
           ])
           .eq('id', user.id)
@@ -107,11 +132,9 @@ export function UsersContextProvider({ children }) {
           .insert([
             {
               full_name: user.full_name,
-              company: user.company,
-              job_title: user.job_title,
+              department: user.department,
               business_phone: user.business_phone,
               email: user.email,
-              address: user.address
             },
           ])
           .select()
@@ -130,6 +153,26 @@ export function UsersContextProvider({ children }) {
     }
   };
 
+
+  const getDepartment = async () => {
+    try {
+      let query = supabase
+        .from('department')
+        .select('id,department');
+
+      const { error, data } = await query
+
+      if (error) throw error;
+      if (data) {
+        setDepartmentOptions(data);
+        return data;
+      }
+
+    } catch (error) {
+      console.log(error.error_description || error.message);
+    }
+  };
+
   return (
     <UsersContext.Provider
       value={{
@@ -145,6 +188,12 @@ export function UsersContextProvider({ children }) {
         saveUser,
         setRows, 
         setFirst,
+        departmentOptions,
+        setDepartmentOptions,
+        selectedDepartmentVal,
+        setSelectedDepartment,
+        userRole,
+        setUserRole
       }}
     >
       {children}
