@@ -10,6 +10,8 @@ import { InputIcon } from 'primereact/inputicon';
 import { RadioButton } from 'primereact/radiobutton';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
+import { OverlayPanel } from 'primereact/overlaypanel';
+import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
 import 'primereact/resources/themes/tailwind-light/theme.css';
 import 'primeicons/primeicons.css';
@@ -18,16 +20,14 @@ import { StaffsContext } from "../services/StaffService";
 
 export default function StaffList() {
 
-  const { getAllStaffs, allStaffs, staffsCount } = useContext(StaffsContext);
+  const { getAllStaffs, allStaffs, staffsCount, departmentOptions, selectedDepartmentVal, setSelectedDepartment } = useContext(StaffsContext);
 
   let emptyStaff = {
     id: null,
     full_name: '',
-    company: '',
-    job_title: '',
+    department: 0,
     business_phone: '',
-    email: '',
-    status: ''
+    email: ''
   };
 
   const [staffs, setStaffs] = useState(null);
@@ -301,6 +301,14 @@ export default function StaffList() {
     }
   };
 
+  const op = useRef(null);
+
+  const onDepartmentSelect = (e) => {
+    setSelectedDepartment(e.value);
+    setUser({ ...user, department: e.value.id }); // Assign selected department's id to record.department
+    op.current.hide();
+  };
+
   return (
 
     <div>
@@ -315,11 +323,9 @@ export default function StaffList() {
           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records" globalFilter={globalFilter} header={header}>
           <Column selectionMode="multiple" exportable={false}></Column>
           <Column field="full_name" header="Name" sortable style={{ minWidth: '16rem' }}></Column>
-          <Column field="company" header="Company" sortable ></Column>
-          <Column field="job_title" header="Title" sortable style={{ minWidth: '8rem' }}></Column>
+          <Column field="department" header="Department" sortable style={{ minWidth: '8rem' }}></Column>
           <Column field="business_phone" header="Phone Number" sortable style={{ minWidth: '10rem' }}></Column>
           <Column field="email" header="Email" sortable style={{ minWidth: '12rem' }}></Column>
-          <Column field="address" header="Address" sortable style={{ minWidth: '12rem' }}></Column>
           <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '12rem' }}></Column>
           {/*<Column rowEditor={allowEdit} headerStyle={{ width: '10%', minWidth: '8rem' }} bodyStyle={{ textAlign: 'center' }}></Column> */}
         </DataTable>
@@ -336,28 +342,25 @@ export default function StaffList() {
           </div>
 
           <div className="field">
-            <label htmlFor="company" className="font-bold">Box Location</label>
-            <InputText id="company" value={staff.company} onChange={(e) => onInputChange(e, 'company')} required autoFocus className={classNames({ 'p-invalid': submitted && !staff.company })} />
+            <label htmlFor="department" className="font-bold">Department</label>
+            <InputNumber id="department" value={staff.department} onChange={(e) => onInputChange(e, 'department')} required showButtons min={0} max={100} autoFocus className={classNames({ 'p-invalid': submitted && !staff.department })} />
+            <Button type="button" label="List of Departments" icon="pi pi-search" outlined onClick={(e) => op.current.toggle(e)} />
+            <OverlayPanel ref={op} showCloseIcon closeOnEscape dismissable>
+                    <DataTable value={departmentOptions} dataKey="id" selectionMode="single" selection={selectedDepartmentVal} onSelectionChange={onDepartmentSelect} >
+                        <Column field="id" header="ID" />
+                        <Column field="department" header="Description"  />
+                    </DataTable>
+            </OverlayPanel>
           </div>
 
           <div className="field">
-            <label htmlFor="job_title" className="font-bold">Department</label>
-            <InputText id="job_title" value={staff.job_title} onChange={(e) => onInputChange(e, 'job_title')} required autoFocus className={classNames({ 'p-invalid': submitted && !staff.job_title })} />
-          </div>
-
-          <div className="field">
-            <label htmlFor="business_phone" className="font-bold">Box Content</label>
+            <label htmlFor="business_phone" className="font-bold">Phone Number</label>
             <InputText id="business_phone" value={staff.business_phone} onChange={(e) => onInputChange(e, 'business_phone')} required autoFocus className={classNames({ 'p-invalid': submitted && !staff.business_phone })} />
           </div>
 
           <div className="field">
-            <label htmlFor="email" className="font-bold">Row</label>
+            <label htmlFor="email" className="font-bold">Email</label>
             <InputText id="email" value={staff.email} onChange={(e) => onInputChange(e, 'email')} disabled autoFocus className={classNames({ 'p-invalid': submitted && !staff.email })} />
-          </div>
-
-          <div className="field">
-            <label htmlFor="address" className="font-bold">Row</label>
-            <InputText id="address" value={staff.address} onChange={(e) => onInputChange(e, 'address')} required autoFocus className={classNames({ 'p-invalid': submitted && !staff.address })} />
           </div>
 
           <div className="p-dialog-footer pb-0">
