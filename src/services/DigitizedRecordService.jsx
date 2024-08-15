@@ -157,7 +157,7 @@ export function DigitizedRecordContextProvider({ children }) {
 
       return data;
     } catch (error) {
-      alert(error.error_description || error.message);
+      console.log(error.error_description || error.message);
     } finally {
       setLoading(false);
     }
@@ -191,7 +191,7 @@ export function DigitizedRecordContextProvider({ children }) {
       await getRecords(recordType);
 
     } catch (error) {
-      alert(error.error_description || error.message);
+      console.log(error.error_description || error.message);
     } finally {
       setLoading(false);
     }
@@ -243,7 +243,7 @@ export function DigitizedRecordContextProvider({ children }) {
       await getRecords(recordType);
 
     } catch (error) {
-      alert(error.error_description || error.message);
+      console.log(error.error_description || error.message);
     } finally {
       setAdding(false);
     }
@@ -272,7 +272,7 @@ export function DigitizedRecordContextProvider({ children }) {
       console.log(record);
 
     } catch (error) {
-      alert(error.error_description || error.message);
+      console.log(error.error_description || error.message);
     } finally {
       setLoading(false);
     }

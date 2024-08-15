@@ -46,7 +46,7 @@ export function RequestsContextProvider({ children }) {
       if (count) setRequestsCount(count);
 
     } catch (error) {
-      alert(error.error_description || error.message);
+      console.log(error.error_description || error.message);
     } finally {
       setLoading(false);
     }
@@ -78,7 +78,7 @@ export function RequestsContextProvider({ children }) {
       await getRequests(requestType);
 
     } catch (error) {
-      alert(error.error_description || error.message);
+      console.log(error.error_description || error.message);
     } finally {
       setLoading(false);
     }
@@ -136,7 +136,7 @@ export function RequestsContextProvider({ children }) {
       await getRequests(requestType);
 
     } catch (error) {
-      alert(error.error_description || error.message);
+      console.log(error.error_description || error.message);
     } finally {
       setAdding(false);
     }
@@ -168,7 +168,7 @@ export function RequestsContextProvider({ children }) {
       console.log(request);
 
     } catch (error) {
-      alert(error.error_description || error.message);
+      console.log(error.error_description || error.message);
     } finally {
       setLoading(false);
     }

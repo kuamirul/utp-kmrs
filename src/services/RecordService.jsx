@@ -173,7 +173,7 @@ export function ItemsContextProvider({ children }) {
       return data;
 
     } catch (error) {
-      alert(error.error_description || error.message);
+      console.log(error.error_description || error.message);
     } finally {
       setLoading(false);
     }
@@ -205,7 +205,7 @@ export function ItemsContextProvider({ children }) {
       await getRecords(recordType);
 
     } catch (error) {
-      alert(error.error_description || error.message);
+      console.log(error.error_description || error.message);
     } finally {
       setLoading(false);
     }
@@ -257,7 +257,7 @@ export function ItemsContextProvider({ children }) {
       await getRecords(recordType);
 
     } catch (error) {
-      alert(error.error_description || error.message);
+      console.log(error.error_description || error.message);
     } finally {
       setAdding(false);
     }
@@ -286,7 +286,7 @@ export function ItemsContextProvider({ children }) {
       console.log(record);
 
     } catch (error) {
-      alert(error.error_description || error.message);
+      console.log(error.error_description || error.message);
     } finally {
       setLoading(false);
     }
