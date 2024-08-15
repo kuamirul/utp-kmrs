@@ -315,8 +315,6 @@ export default function UserList({userRole}) {
 
   return (
 
-    //  TODO: repalce job title with department
-
     <div>
       <Toast ref={toast} />
       <div className="card">

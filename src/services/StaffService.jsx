@@ -12,6 +12,8 @@ export function StaffsContextProvider({ children }) {
   const [rows, setRows] = useState(10);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [selectedDepartmentVal, setSelectedDepartment] = useState([]);
 
   // https://github.com/orgs/supabase/discussions/1223
   const getPagination = (page, size) => {
@@ -28,32 +30,38 @@ export function StaffsContextProvider({ children }) {
     setLoading(true);
     try {
 
-      const { error, data, count } = await supabase
-      .from('profiles')
-      .select(`
+      let query = supabase
+        .from('profiles')
+        .select(`
         id,
         full_name,
-        company,
-        job_title,
+        department,
         business_phone,
-        email,
-        address,
-        user_roles!profiles_id_fkey1!inner (
-          role
-        )
+        email
       `, { count: 'exact' })
-      .eq('user_roles.role', 'user')
-      .order("id", { ascending: false });
+        .order("id", { ascending: false });
       //.not('user_roles.role', 'is', null)           
+
+      const { error, data, count } = await query
+
+      const departmentValues = await getDepartment();
+      // console.log("department: " + userDepartment.department);
+      const departmentMap = Object.fromEntries(departmentValues.map(d => [d.id, d.department]));
+
+      // Replace id with description in records
+      const updatedStaffs = data.map(staff => ({
+        ...staff,
+        department: departmentMap[staff.department] || 0
+      }));
 
       if (error) throw error;
 
-      if (data) setAllStaffs(data);
+      if (data) setAllStaffs(updatedStaffs);
 
       if (count) setStaffsCount(count);
 
     } catch (error) {
-      alert(error.error_description || error.message);
+      console.log(error.error_description || error.message);
     } finally {
       setLoading(false);
     }
@@ -83,7 +91,7 @@ export function StaffsContextProvider({ children }) {
       await getDisposedStaffs();
 
     } catch (error) {
-      alert(error.error_description || error.message);
+      console.log(error.error_description || error.message);
     } finally {
       setLoading(false);
     }
@@ -102,11 +110,9 @@ export function StaffsContextProvider({ children }) {
           .update([
             {
               full_name: staff.full_name,
-              company: staff.company,
-              job_title: staff.job_title,
+              department: staff.department,
               business_phone: staff.business_phone,
-              email: staff.email,
-              address: staff.address
+              email: staff.email
             },
           ])
           .eq('id', staff.id)
@@ -120,11 +126,9 @@ export function StaffsContextProvider({ children }) {
           .insert([
             {
               full_name: staff.full_name,
-              company: staff.company,
-              job_title: staff.job_title,
+              department: staff.department,
               business_phone: staff.business_phone,
               email: staff.email,
-              address: staff.address
             },
           ])
           .select()
@@ -137,9 +141,28 @@ export function StaffsContextProvider({ children }) {
       await getAllStaffs();
 
     } catch (error) {
-      alert(error.error_description || error.message);
+      console.log(error.error_description || error.message);
     } finally {
       setAdding(false);
+    }
+  };
+
+  const getDepartment = async () => {
+    try {
+      let query = supabase
+        .from('department')
+        .select('id,department');
+
+      const { error, data } = await query
+
+      if (error) throw error;
+      if (data) {
+        setDepartmentOptions(data);
+        return data;
+      }
+
+    } catch (error) {
+      console.log(error.error_description || error.message);
     }
   };
 
@@ -158,6 +181,10 @@ export function StaffsContextProvider({ children }) {
         saveStaff,
         setRows,
         setFirst,
+        departmentOptions,
+        setDepartmentOptions,
+        selectedDepartmentVal,
+        setSelectedDepartment,
       }}
     >
       {children}
