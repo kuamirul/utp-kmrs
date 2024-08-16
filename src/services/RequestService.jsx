@@ -31,7 +31,7 @@ export function RequestsContextProvider({ children }) {
 
       let query = supabase
         .from('requests')
-        .select('id,title,records_description,customer,assigned_to,department,priority,status,category,due_date', { count: 'exact' });
+        .select('id,title,records_description, profiles:customer(id, full_name),profiles2:assigned_to(id, full_name),department (id,department),priority,status (id, status),category,due_date', { count: 'exact' });
 
       query = query.range(from, to);
       query = query.order("id", { ascending: false });
@@ -41,7 +41,10 @@ export function RequestsContextProvider({ children }) {
 
       if (error) throw error;
 
-      if (data) setRequests(data);
+      if (data) {
+        setRequests(data);
+        console.log("data: ", data);
+      }
 
       if (count) setRequestsCount(count);
 

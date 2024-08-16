@@ -26,9 +26,9 @@ export default function requestsTable({ requestType }) {
     records_description: '',
     customer: null,
     assigned_to: null,
-    department: null,
+    department: {value:"department"},
     priority: '',
-    status: '',
+    status: {value:"status"},
     category: '',
     due_date: null
   };
@@ -348,13 +348,17 @@ export default function requestsTable({ requestType }) {
 
           <Column field="title" header="Request Title" sortable filter filterPlaceholder="Search" style={{ minWidth: '16rem' }}></Column>
           <Column field="records_description" header="Box Location" filter filterPlaceholder="Search" sortable style={{ minWidth: '12rem' }}></Column>
-          <Column field="customer" header="Customer" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="assigned_to" header="Assigned To" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="department" header="Department" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="profiles.full_name" header="Customer" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="profiles2.full_name" header="Assigned To" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="department.department" header="Department" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
           <Column field="priority" header="Priority" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="status" header="Status" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="status.status" header="Status" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
           <Column field="category" header="Category" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="due_date" header="Due Date" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="due_date" header="Due Date" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column> 
+          {/* <Column field="title" header="Request Title" sortable filter filterPlaceholder="Search" style={{ minWidth: '16rem' }}></Column>
+          <Column field="department" header="Department" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="records_description" header="Box Content" filter filterPlaceholder="Search" sortable style={{ minWidth: '12rem' }}></Column>
+          <Column field="status" header="Status" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column> */}
           <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '12rem' }}></Column>
           {/*<Column rowEditor={allowEdit} headerStyle={{ width: '10%', minWidth: '8rem' }} bodyStyle={{ textAlign: 'center' }}></Column> */}
         </DataTable>
@@ -368,68 +372,45 @@ export default function requestsTable({ requestType }) {
 
       </div>
 
-      <Column field="title" header="Request Title" sortable filter filterPlaceholder="Search" style={{ minWidth: '16rem' }}></Column>
-          <Column field="records_description" header="Box Location" filter filterPlaceholder="Search" sortable style={{ minWidth: '12rem' }}></Column>
-          <Column field="customer" header="Customer" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="assigned_to" header="Assigned To" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          {/* <Column field="title" header="Request Title" sortable filter filterPlaceholder="Search" style={{ minWidth: '16rem' }}></Column>
+          <Column field="records_description" header="Box Content" filter filterPlaceholder="Search" sortable style={{ minWidth: '12rem' }}></Column>
           <Column field="department" header="Department" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="priority" header="Priority" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="status" header="Status" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="category" header="Category" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="due_date" header="Due Date" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="status" header="Status" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column> */}
+          {/* <Column field="customer" header="Customer" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column> */}
+          {/* <Column field="assigned_to" header="Assigned To" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column> */}
+          {/* <Column field="category" header="Category" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column> */}
+          {/* <Column field="due_date" header="Due Date" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column> */}
 
 
-      <Dialog visible={requestDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Record Details" modal className="p-fluid" onHide={hideDialog}>
+      <Dialog visible={requestDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Request Details" modal className="p-fluid" onHide={hideDialog}>
         {/* {request.image && <img src={`https://primefaces.org/cdn/primereact/images/request/${request.image}`} alt={request.image} className="request-image block m-auto pb-3" />} */}
         <form onSubmit={handleSaveRecord} >
           <div className="field">
             <label htmlFor="title" className="font-bold">Request Title</label>
             <InputText id="title" value={request.title} onChange={(e) => onInputChange(e, 'title')} required autoFocus className={classNames({ 'p-invalid': submitted && !request.request_title })} />
-            {submitted && !request.title && <small className="p-error">Record Title is required.</small>}
-          </div>
-
-          <div className="field">
-            <label htmlFor="records_description" className="font-bold">Request Description</label>
-            <InputText id="records_description" value={request.records_description} onChange={(e) => onInputChange(e, 'records_description')} required autoFocus className={classNames({ 'p-invalid': submitted && !request.box_location })} />
+            {submitted && !request.title && <small className="p-error">Request Title is required.</small>}
           </div>
 
           <div className="field">
             <label htmlFor="department" className="font-bold">Department</label>
-            <InputText id="department" value={request.department} onChange={(e) => onInputChange(e, 'department')} required autoFocus className={classNames({ 'p-invalid': submitted && !request.department })} />
+            <InputText id="department" value={request.department.department} onChange={(e) => onInputChange(e, 'department')} disabled autoFocus className={classNames({ 'p-invalid': submitted && !request.department.department })} />
           </div>
 
           <div className="field">
-            <label htmlFor="priority" className="font-bold">Priority</label>
-            <InputText id="priority" value={request.priority} onChange={(e) => onInputChange(e, 'priority')} required autoFocus className={classNames({ 'p-invalid': submitted && !request.priority })} />
+            <label htmlFor="records_description" className="font-bold">Box Content</label>
+            <InputText id="records_description" value={request.records_description} onChange={(e) => onInputChange(e, 'records_description')} required autoFocus className={classNames({ 'p-invalid': submitted && !request.records_description })} />
           </div>
 
           <div className="field">
-            <label htmlFor="category" className="font-bold">Category</label>
-            <InputText id="category" value={request.category} onChange={(e) => onInputChange(e, 'category')} required autoFocus className={classNames({ 'p-invalid': submitted && !request.category })} />
-          </div>
-
-          <div className="field">
-            <label className="mb-3 font-bold">Status</label>
+            <label className="mb-3 font-bold">Transfer to Record Center</label>
             <div className="formgrid grid">
               <div className="field-radiobutton col-6">
-                <RadioButton inputId="category1" name="category" value="Active" onChange={onStatusChange} checked={request.status === 'Active'} />
-                <label htmlFor="category1">Active</label>
+                <RadioButton inputId="category2" name="category" value="To Digitize" onChange={onStatusChange} checked={request.status.status === 'To Digitize'} />
+                <label htmlFor="category2">To Digitize</label>
               </div>
               <div className="field-radiobutton col-6">
-                <RadioButton inputId="category2" name="category" value="Digitized" onChange={onStatusChange} checked={request.status === 'Digitized'} />
-                <label htmlFor="category2">Digitized</label>
-              </div>
-              <div className="field-radiobutton col-6">
-                <RadioButton inputId="category3" name="category" value="Disposed" onChange={onStatusChange} checked={request.status === 'Disposed'} />
-                <label htmlFor="category3">Disposed</label>
-              </div>
-              <div className="field-radiobutton col-6">
-                <RadioButton inputId="category4" name="category" value="Inactive" onChange={onStatusChange} checked={request.status === 'Inactive'} />
-                <label htmlFor="category4">Inactive</label>
-              </div>
-              <div className="field-radiobutton col-6">
-                <RadioButton inputId="category4" name="category" value="KIV" onChange={onStatusChange} checked={request.status === 'KIV'} />
-                <label htmlFor="category4">KIV</label>
+                <RadioButton inputId="category3" name="category" value="To Dispose" onChange={onStatusChange} checked={request.status.status === 'To Dispose'} />
+                <label htmlFor="category3">To Dispose</label>
               </div>
             </div>
           </div>
