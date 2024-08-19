@@ -54,10 +54,6 @@ export function DisposedRecordContextProvider({ children }) {
 
   const getUserDepartment = async (email) => {
 
-    // const role = await getUserRole(user);
-    // console.log("role: " + role );
-
-
     try {
 
       let query = supabase

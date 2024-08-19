@@ -12,8 +12,7 @@ import DisposedRecordsTable from '../components/DisposedRecordsTable'
 //import RecordsTable from '../components/RecordsTable'
 
 const DisposedRecords = () => {
-    const { user } = useAuth();
-    const { userRole } = useAdmin();
+    const { user, userRole } = useAuth();
     const [fetchError, setFetchError] = React.useState(null);
 
     return (
