@@ -16,9 +16,9 @@ import 'primeicons/primeicons.css';
 import { RequestsContext } from "../services/RequestService";
 
 
-export default function requestsTable({ requestType }) {
+export default function requestsTable({ email }) {
 
-  const { getRequests, requestsList, requestsCount, setRequestType } = useContext(RequestsContext);
+  const { getRequests, requestsList, requestsCount, setRequestType, getDepartment, departmentOptions, setDepartmentOptions } = useContext(RequestsContext);
 
   let emptyRequest = {
     id: null,
@@ -26,9 +26,9 @@ export default function requestsTable({ requestType }) {
     records_description: '',
     customer: null,
     assigned_to: null,
-    department: {value:"department"},
+    department: { value: "department" },
     priority: '',
-    status: {value:"status"},
+    status: { value: "status" },
     category: '',
     due_date: null
   };
@@ -43,10 +43,13 @@ export default function requestsTable({ requestType }) {
   const [globalFilter, setGlobalFilter] = useState(null);
   const toast = useRef(null);
   const dt = useRef(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [departments, setDepartments] = useState([]);
 
   const openNew = () => {
     setRequest(emptyRequest);
     setSubmitted(false);
+    setIsEditing(false);
     setRequestDialog(true);
   };
 
@@ -91,6 +94,7 @@ export default function requestsTable({ requestType }) {
   };
 
   const editRequest = (request) => {
+    setIsEditing(true);
     setRequest({ ...request });
     setRequestDialog(true);
   };
@@ -196,35 +200,6 @@ export default function requestsTable({ requestType }) {
     );
   };
 
-  const [statuses] = useState(['Active', 'Disposed', 'Digitized', 'Inactive', 'KIV']);
-  const [selectedStatus, setSelectedStatus] = useState(null);
-
-  const statusBodyTemplate = (rowData) => {
-    return <Tag value={rowData.status} severity={getStatus(rowData)}></Tag>;
-  };
-
-  const getStatus = (request) => {
-    switch (request.status) {
-      case 'Active':
-        return 'Active';
-
-      case 'Digitized':
-        return 'Digitized';
-
-      case 'Disposed':
-        return 'Disposed';
-
-      case 'Inactive':
-        return 'Inactive';
-
-      case 'KIV':
-        return 'KIV';
-
-      default:
-        return null;
-    }
-  };
-
   const header = (
     <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
       <h4 className="m-0">Manage Requests</h4>
@@ -272,7 +247,8 @@ export default function requestsTable({ requestType }) {
   let networkTimeout = null;
 
   useEffect(() => {
-    setRequestType(requestType);
+    // setRequestType(requestType);
+    fetchDepartments();
     loadLazyData();
   }, [lazyState]);
 
@@ -282,8 +258,8 @@ export default function requestsTable({ requestType }) {
     if (networkTimeout) {
       clearTimeout(networkTimeout);
     }
-    // TODO EXPORT CONST RECORD FROM SERVICE
-    getRequests(requestType, { lazyEvent: JSON.stringify(lazyState) });
+
+    getRequests({ lazyEvent: JSON.stringify(lazyState) });
     setTotalRecords(requestsCount);
     setLoading(false);
 
@@ -302,6 +278,15 @@ export default function requestsTable({ requestType }) {
     setlazyState(event);
   };
 
+  const fetchDepartments = async () => {
+    try {
+      const departmentData = await getDepartment(email); // Call the service function
+      setDepartments(departmentData);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const onFilter = (event) => {
     event['first'] = 0;
     setlazyState(event);
@@ -314,20 +299,6 @@ export default function requestsTable({ requestType }) {
     setSelectAll(value.length === totalRecords);
   };
 
-  const onSelectAllChange = (event) => {
-    const selectAll = event.checked;
-
-    if (selectAll) {
-      CustomerService.getCustomers().then((data) => {
-        setSelectAll(true);
-        setSelectedCustomers(data.customers);
-      });
-    } else {
-      setSelectAll(false);
-      setSelectedCustomers([]);
-    }
-  };
-
   return (
 
     <div>
@@ -335,13 +306,13 @@ export default function requestsTable({ requestType }) {
       <div className="card">
         <Toolbar className="mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate}></Toolbar>
 
-        <DataTable 
+        <DataTable
           ref={dt} value={requestsList} dataKey="id" lazy
           selection={selectedRequests} onSelectionChange={(e) => setSelectedRequests(e.value)}
           paginator rows={10} rowsPerPageOptions={[5, 10, 25]} totalRecords={requestsCount} first={lazyState.first} onPage={onPage}
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} requests" 
-          onFilter={onFilter} filters={lazyState.filters}  filterDisplay="row" 
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} requests"
+          onFilter={onFilter} filters={lazyState.filters} filterDisplay="row"
           header={header}>
           <Column selectionMode="multiple" exportable={false}></Column>
           {/* <Column field="id" header="#" sortable ></Column> */}
@@ -354,7 +325,7 @@ export default function requestsTable({ requestType }) {
           <Column field="priority" header="Priority" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
           <Column field="status.status" header="Status" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
           <Column field="category" header="Category" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="due_date" header="Due Date" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column> 
+          <Column field="due_date" header="Due Date" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
           {/* <Column field="title" header="Request Title" sortable filter filterPlaceholder="Search" style={{ minWidth: '16rem' }}></Column>
           <Column field="department" header="Department" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
           <Column field="records_description" header="Box Content" filter filterPlaceholder="Search" sortable style={{ minWidth: '12rem' }}></Column>
@@ -363,27 +334,9 @@ export default function requestsTable({ requestType }) {
           {/*<Column rowEditor={allowEdit} headerStyle={{ width: '10%', minWidth: '8rem' }} bodyStyle={{ textAlign: 'center' }}></Column> */}
         </DataTable>
 
-        {/* https://primereact.org/datatable/#lazy_load */}
-        {/* value={customers} lazy filterDisplay="row" dataKey="id" paginator
-            first={lazyState.first} rows={10} totalRecords={totalRecords} onPage={onPage}
-            onSort={onSort} sortField={lazyState.sortField} sortOrder={lazyState.sortOrder}
-            onFilter={onFilter} filters={lazyState.filters} loading={loading} tableStyle={{ minWidth: '75rem' }}
-            selection={selectedCustomers} onSelectionChange={onSelectionChange} selectAll={selectAll} onSelectAllChange={onSelectAllChange} */}
-
       </div>
 
-          {/* <Column field="title" header="Request Title" sortable filter filterPlaceholder="Search" style={{ minWidth: '16rem' }}></Column>
-          <Column field="records_description" header="Box Content" filter filterPlaceholder="Search" sortable style={{ minWidth: '12rem' }}></Column>
-          <Column field="department" header="Department" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="status" header="Status" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column> */}
-          {/* <Column field="customer" header="Customer" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column> */}
-          {/* <Column field="assigned_to" header="Assigned To" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column> */}
-          {/* <Column field="category" header="Category" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column> */}
-          {/* <Column field="due_date" header="Due Date" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column> */}
-
-
       <Dialog visible={requestDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Request Details" modal className="p-fluid" onHide={hideDialog}>
-        {/* {request.image && <img src={`https://primefaces.org/cdn/primereact/images/request/${request.image}`} alt={request.image} className="request-image block m-auto pb-3" />} */}
         <form onSubmit={handleSaveRecord} >
           <div className="field">
             <label htmlFor="title" className="font-bold">Request Title</label>
@@ -393,8 +346,15 @@ export default function requestsTable({ requestType }) {
 
           <div className="field">
             <label htmlFor="department" className="font-bold">Department</label>
-            <InputText id="department" value={request.department.department} onChange={(e) => onInputChange(e, 'department')} disabled autoFocus className={classNames({ 'p-invalid': submitted && !request.department.department })} />
+            {isEditing ? (
+              <InputText id="department" value={request.department.department} disabled autoFocus className={classNames({ 'p-invalid': submitted && !request.department.department })} />
+            ) : (
+              <InputText id="department" value={departments?.department?.department} disabled autoFocus className={classNames({ 'p-invalid': submitted && !request.department.department })} />
+            )}
+            {/* <InputText id="department" value={request.department.department} onChange={(e) => onInputChange(e, 'department')} disabled autoFocus className={classNames({ 'p-invalid': submitted && !request.department.department })} /> */}
           </div>
+
+
 
           <div className="field">
             <label htmlFor="records_description" className="font-bold">Box Content</label>
@@ -414,22 +374,6 @@ export default function requestsTable({ requestType }) {
               </div>
             </div>
           </div>
-
-          {/* <div className="field">
-                    <label className="mb-3 font-bold">Status</label>
-                        <div className="formgrid grid">
-                        <Dropdown
-                            value={getStatus(request.status)}
-                            options={statuses}
-                            //onChange={(e) => request.editorCallback(e.value)}
-                            onChange={(e) => setSelectedStatus(e.value)}
-                            placeholder="Select a Status"
-                            itemTemplate={(request) => {
-                                return <Tag value={request} severity={getStatus(request)}></Tag>;
-                            }}
-                        />
-                        </div>
-                    </div> */}
 
           <div className="p-dialog-footer pb-0">
             {/* <Button label="Submit" type="submit" className="p-button-rounded p-button-success mr-2 mb-2" /> */}
