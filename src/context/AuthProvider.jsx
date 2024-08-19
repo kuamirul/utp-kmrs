@@ -45,7 +45,6 @@ const AuthProvider = ({ children }) => {
   
         if (error) throw error;
         if (data) setUserRole(data.role);
-        console.log(data);
       } catch (error) {
         console.error('Error fetching user role:', error);
       }
@@ -57,7 +56,6 @@ const AuthProvider = ({ children }) => {
       } else if (event === "SIGNED_IN") {
         setUser(session.user);
         getUserRole(session.user.id);
-        // console.log(session.user);
         setAuth(true);
       } else if (event === "SIGNED_OUT") {
         setAuth(false);

@@ -18,7 +18,7 @@ const Requests = () => {
       <div className="container-flex" style={{ fontSize: "24px" }}>
         <h3 className="pl-3">Request List</h3>
         {fetchError && (<p>{fetchError}</p>)}
-        <RequestsList />
+        <RequestsList email={user.email} />
       </div>
     </Panel>
 

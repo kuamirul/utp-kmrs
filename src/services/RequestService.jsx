@@ -13,6 +13,7 @@ export function RequestsContextProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
   const [requestType, setRequestType] = useState("");
+  const [departmentOptions, setDepartmentOptions] = useState([]);
 
   // https://github.com/orgs/supabase/discussions/1223
   const getPagination = (page, size) => {
@@ -24,7 +25,7 @@ export function RequestsContextProvider({ children }) {
     return { from, to }
   }
 
-  const getRequests = async (requestType) => {
+  const getRequests = async () => {
     const { from, to } = getPagination(first, rows);
     setLoading(true);
     try {
@@ -43,7 +44,7 @@ export function RequestsContextProvider({ children }) {
 
       if (data) {
         setRequests(data);
-        console.log("data: ", data);
+        // console.log("data: ", data);
       }
 
       if (count) setRequestsCount(count);
@@ -177,6 +178,27 @@ export function RequestsContextProvider({ children }) {
     }
   };
 
+  const getDepartment = async (email) => {
+    try {
+      let query = supabase
+        .from('profiles')
+        .select('department (id,department)')
+        .eq('email', email)
+        .single();
+
+      const { error, data } = await query
+
+      if (error) throw error;
+      if (data) {
+        // setDepartmentOptions(data);
+        return data;
+      }
+
+    } catch (error) {
+      console.log(error.error_description || error.message);
+    }
+  };
+
   return (
     <RequestsContext.Provider
       value={{
@@ -193,6 +215,9 @@ export function RequestsContextProvider({ children }) {
         setFirst,
         requestType,
         setRequestType,
+        getDepartment,
+        departmentOptions,
+        setDepartmentOptions
       }}
     >
       {children}
