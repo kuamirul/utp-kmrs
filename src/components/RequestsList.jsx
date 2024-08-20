@@ -262,7 +262,6 @@ export default function requestsTable({ email }) {
     getRequests({ lazyEvent: JSON.stringify(lazyState) });
     setTotalRecords(requestsCount);
     setLoading(false);
-
   };
 
   const { setRows, setFirst } = useContext(RequestsContext);
@@ -319,7 +318,7 @@ export default function requestsTable({ email }) {
 
           <Column field="title" header="Request Title" sortable filter filterPlaceholder="Search" style={{ minWidth: '16rem' }}></Column>
           <Column field="records_description" header="Box Location" filter filterPlaceholder="Search" sortable style={{ minWidth: '12rem' }}></Column>
-          <Column field="profiles.full_name" header="Customer" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="profiles.full_name" header="Requester" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
           <Column field="profiles2.full_name" header="Assigned To" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
           <Column field="department.department" header="Department" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
           <Column field="priority" header="Priority" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
@@ -338,23 +337,24 @@ export default function requestsTable({ email }) {
 
       <Dialog visible={requestDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Request Details" modal className="p-fluid" onHide={hideDialog}>
         <form onSubmit={handleSaveRecord} >
+
+          <div className="field">
+            <label htmlFor="requester" className="font-bold">Requester: {email}</label>
+            {/* <InputText id="requester" value={email} onChange={(e) => onInputChange(e, 'title')} disabled autoFocus className={classNames({ 'p-invalid': submitted && !request.request_title })} />
+            {submitted && !request.title && <small className="p-error">Request Title is required.</small>} */}
+          </div>
+
+          <div className="field">
+            <label htmlFor="department" className="font-bold">
+              {isEditing ? `Department: ${request.department.department || 'No department available'}` : `Department: ${departments?.department?.department || 'No department available'}`}
+            </label>
+          </div>
+
           <div className="field">
             <label htmlFor="title" className="font-bold">Request Title</label>
             <InputText id="title" value={request.title} onChange={(e) => onInputChange(e, 'title')} required autoFocus className={classNames({ 'p-invalid': submitted && !request.request_title })} />
             {submitted && !request.title && <small className="p-error">Request Title is required.</small>}
           </div>
-
-          <div className="field">
-            <label htmlFor="department" className="font-bold">Department</label>
-            {isEditing ? (
-              <InputText id="department" value={request.department.department} disabled autoFocus className={classNames({ 'p-invalid': submitted && !request.department.department })} />
-            ) : (
-              <InputText id="department" value={departments?.department?.department} disabled autoFocus className={classNames({ 'p-invalid': submitted && !request.department.department })} />
-            )}
-            {/* <InputText id="department" value={request.department.department} onChange={(e) => onInputChange(e, 'department')} disabled autoFocus className={classNames({ 'p-invalid': submitted && !request.department.department })} /> */}
-          </div>
-
-
 
           <div className="field">
             <label htmlFor="records_description" className="font-bold">Box Content</label>
