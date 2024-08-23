@@ -111,7 +111,7 @@ export function ItemsContextProvider({ children }) {
     const { from, to } = getPagination(first, rows);
     setLoading(true);
 
-    const { filters } = lazyState;
+    const { filters } = lazyState || {};
     // const role = await getUserRole(user);
 
 
@@ -202,7 +202,7 @@ export function ItemsContextProvider({ children }) {
 
       if (error) throw error;
 
-      await getRecords(recordType);
+      await getRecords();
 
     } catch (error) {
       console.log(error.error_description || error.message);
@@ -218,7 +218,7 @@ export function ItemsContextProvider({ children }) {
       console.log("record before fetch: ", record);
 
       if ((record.id) && (record.id != null)) {
-        console.log("Calling update query");
+        console.log("Calling update query", record);
         const { error } = await supabase
           .from("records")
           .update([
@@ -236,7 +236,7 @@ export function ItemsContextProvider({ children }) {
 
         if (error) throw error;
       } else {
-        console.log("Calling insert query");
+        console.log("Calling insert query", record);
         const { error } = await supabase
           .from("records")
           .insert([
