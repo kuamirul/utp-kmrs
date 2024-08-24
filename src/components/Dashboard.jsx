@@ -1,28 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client'
-import { PrimeReactProvider, PrimeReactContext } from 'primereact/api';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { supabase } from "../supabaseClient";
-import { classNames } from 'primereact/utils';
-import { Toast } from 'primereact/toast';
-import { Button } from 'primereact/button';
-import { FileUpload } from 'primereact/fileupload';
-import { Rating } from 'primereact/rating';
-import { Toolbar } from 'primereact/toolbar';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { IconField } from 'primereact/iconfield';
-import { InputIcon } from 'primereact/inputicon';
-import { RadioButton } from 'primereact/radiobutton';
-import { InputNumber } from 'primereact/inputnumber';
-import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
-import { Tag } from 'primereact/tag';
 import 'primereact/resources/themes/tailwind-light/theme.css';
 import 'primeicons/primeicons.css';
+import { DashboardContext } from "../services/DashboardService";
 
 
-export default function dashboard() {
+export default function dashboard({ recordType, user, email, userRole }) {
+
+    const { getRecords } = useContext(DashboardContext);
+
+    useEffect(() => {
+        // setRecordType(recordType);
+        // setUser(user);
+        // setEmail(email);
+        // setUserRole(userRole);
+        // getRecords(recordType, user, email, userRole);
+      });
 
     return (
 
