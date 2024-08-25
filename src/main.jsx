@@ -11,7 +11,6 @@ import { DisposedRecordContextProvider } from "./services/DisposedRecordService"
 import { UsersContextProvider } from "./services/UserService";
 import { StaffsContextProvider } from "./services/StaffService";
 import { RequestsContextProvider } from "./services/RequestService";
-import { DashboardContextProvider } from "./services/DashboardService";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -21,7 +20,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <UsersContextProvider>
             <StaffsContextProvider>
               <RequestsContextProvider>
-                <DashboardContextProvider>
                   <BrowserRouter>
                     <AuthProvider>
                       <AdminProvider>
@@ -29,7 +27,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                       </AdminProvider>
                     </AuthProvider>
                   </BrowserRouter>
-                </DashboardContextProvider>
               </RequestsContextProvider>
             </StaffsContextProvider>
           </UsersContextProvider>
