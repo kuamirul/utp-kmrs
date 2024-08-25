@@ -18,7 +18,7 @@ const Home = () => {
       <div className="container-flex" style={{ fontSize: "24px" }}>
         <h3 className="pl-3">Welcome user {user.email}  </h3>
       </div>
-      <Dashboard user={user.id} email={user.email} userRole={userRole} />
+      <Dashboard email={user.email} userRole={userRole} />
     </Panel>
 
   );
