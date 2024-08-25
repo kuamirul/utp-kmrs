@@ -30,26 +30,6 @@ export function ItemsContextProvider({ children }) {
     return { from, to }
   }
 
-  // const getUserRole = async (user) => {
-  //   try {
-  //     let query = supabase
-  //       .from('user_roles')
-  //       .select('role')
-  //       .eq('user_id', user);
-
-  //     const { error, data } = await query
-
-  //     if (error) throw error;
-  //     if (data) {
-  //       //setUserRole(data[0].role);
-  //       return data[0].role;
-  //     }
-
-  //   } catch (error) {
-  //     console.log(error.error_description || error.message);
-  //   }
-  // };
-
   const getUserDepartment = async (email) => {
     try {
       let query = supabase

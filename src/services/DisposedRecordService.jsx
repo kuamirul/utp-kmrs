@@ -30,32 +30,8 @@ export function DisposedRecordContextProvider({ children }) {
     return { from, to }
   }
 
-  // const getUserRole = async (user) => {
-  //   try {
-  //     let query = supabase
-  //       .from('user_roles')
-  //       .select('role')
-  //       .eq('user_id', user);
-
-  //     const { error, data } = await query
-
-  //     if (error) throw error;
-  //     if (data) {
-  //       //setUserRole(data[0].role);
-  //       return data[0].role;
-  //     }
-
-  //   } catch (error) {
-  //     console.log(error.error_description || error.message);
-  //   }
-  // };
-
-
-
   const getUserDepartment = async (email) => {
-
     try {
-
       let query = supabase
         .from('profiles')
         .select('department')
@@ -69,7 +45,6 @@ export function DisposedRecordContextProvider({ children }) {
       if (data) {
         console.log(data);
         return data;
-        //console.log(myObjStr);
       }
 
     } catch (error) {
@@ -110,7 +85,7 @@ export function DisposedRecordContextProvider({ children }) {
   const getRecords = async (recordType, user, email, userRole, lazyState) => {
     const { from, to } = getPagination(first, rows);
     setLoading(true);
-    const { filters } = lazyState;
+    const { filters } = lazyState || {};
     try {
 
       let query = supabase
@@ -159,8 +134,6 @@ export function DisposedRecordContextProvider({ children }) {
       setLoading(false);
     }
   };
-
-
 
   // delete row from the database
   const deleteRecord = async (id) => {

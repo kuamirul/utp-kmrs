@@ -30,28 +30,6 @@ export function DigitizedRecordContextProvider({ children }) {
     return { from, to }
   }
 
-  // const getUserRole = async (user) => {
-  //   try {
-  //     let query = supabase
-  //       .from('user_roles')
-  //       .select('role')
-  //       .eq('user_id', user);
-
-  //     const { error, data } = await query
-
-  //     if (error) throw error;
-  //     if (data) {
-  //       //setUserRole(data[0].role);
-  //       return data[0].role;
-  //     }
-
-  //   } catch (error) {
-  //     console.log(error.error_description || error.message);
-  //   }
-  // };
-
-
-
   const getUserDepartment = async (email) => {
 
     // const role = await getUserRole(user);
@@ -113,7 +91,7 @@ export function DigitizedRecordContextProvider({ children }) {
   const getRecords = async (recordType, user, email, userRole, lazyState) => {
     const { from, to } = getPagination(first, rows);
     setLoading(true);
-    const { filters } = lazyState;
+    const { filters } = lazyState || {};
     try {
 
       let query = supabase
