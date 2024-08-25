@@ -269,12 +269,6 @@ export default function digitizedRecordsTable({ recordType, user, email, userRol
     if (networkTimeout) {
       clearTimeout(networkTimeout);
     }
-    // TODO EXPORT CONST RECORD FROM SERVICE
-    /*getRecords(recordType, { lazyEvent: JSON.stringify(lazyState) });
-    setTotalRecords(recordsCount);
-    setLoading(false);*/
-
-    //console.log(user);
 
     getRecords({ lazyEvent: JSON.stringify(lazyState) }, user, email, userRole, lazyState).then((data) => {
       // setTotalRecords(data.totalRecords);
@@ -407,8 +401,6 @@ export default function digitizedRecordsTable({ recordType, user, email, userRol
               </div>
             </div>
           </div>
-
-                            //onChange={(e) => record.editorCallback(e.value)}
 
           <div className="p-dialog-footer pb-0">
             {/* <Button label="Submit" type="submit" className="p-button-rounded p-button-success mr-2 mb-2" /> */}

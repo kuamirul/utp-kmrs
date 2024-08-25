@@ -314,7 +314,7 @@ export default function disposedRecordsTable({ recordType, user, email, userRole
     console.log(selectedRecords?.[0]?.id);
     setRecord({ ...record, department: selectedRecords?.[0]?.id });
     return selectedRecords?.[0]?.id;
-    }
+  }
 
   return (
 
@@ -365,10 +365,10 @@ export default function disposedRecordsTable({ recordType, user, email, userRole
             <InputNumber id="department" value={record.department} onChange={(e) => onInputChange(e, 'department')} required showButtons min={0} max={100} autoFocus className={classNames({ 'p-invalid': submitted && !record.department })} />
             <Button type="button" label="List of Departments" icon="pi pi-search" outlined onClick={(e) => op.current.toggle(e)} />
             <OverlayPanel ref={op} showCloseIcon closeOnEscape dismissable>
-                    <DataTable value={departmentOptions} dataKey="id" selectionMode="single" selection={selectedDepartmentVal} onSelectionChange={onDepartmentSelect} >
-                        <Column field="id" header="ID" />
-                        <Column field="department" header="Description"  />
-                    </DataTable>
+              <DataTable value={departmentOptions} dataKey="id" selectionMode="single" selection={selectedDepartmentVal} onSelectionChange={onDepartmentSelect} >
+                <Column field="id" header="ID" />
+                <Column field="department" header="Description" />
+              </DataTable>
             </OverlayPanel>
           </div>
 
@@ -402,13 +402,11 @@ export default function disposedRecordsTable({ recordType, user, email, userRole
                 <label htmlFor="category4">Inactive</label>
               </div>
               <div className="field-radiobutton col-6">
-                <RadioButton inputId="category4" name="category" value="KIV" onChange={onStatusChange} checked={record.status === 5 } />
+                <RadioButton inputId="category4" name="category" value="KIV" onChange={onStatusChange} checked={record.status === 5} />
                 <label htmlFor="category4">KIV</label>
               </div>
             </div>
           </div>
-
-                            //onChange={(e) => record.editorCallback(e.value)}
 
           <div className="p-dialog-footer pb-0">
             {/* <Button label="Submit" type="submit" className="p-button-rounded p-button-success mr-2 mb-2" /> */}
