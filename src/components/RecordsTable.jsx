@@ -100,13 +100,6 @@ export default function recordsTable({ recordType, user, email, userRole }) {
     return statusLookup[statusName] || null; // Handle case where status is not found
   };
   
-  // const editRecord = (record) => {
-  //   const updatedRecord = { ...record };
-  //   updatedRecord.department = findDepartmentId(record.department);
-  //   setRecord(updatedRecord);
-  //   setRecordDialog(true);
-  // };
-
   const editRecord = (record) => {
     // setRecord({ ...record });
     const updatedRecord = { ...record };
