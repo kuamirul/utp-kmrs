@@ -32,20 +32,30 @@ export function RequestsContextProvider({ children }) {
 
       let query = supabase
         .from('requests')
-        .select('id,title,records_description, profiles:customer(id, full_name),profiles2:assigned_to(id, full_name),department (id,department),priority,status (id, status),category,due_date', { count: 'exact' });
+        .select('id,title,records_description, profiles:customer(id, full_name),profiles2:assigned_to(id, full_name),department,status', { count: 'exact' });
 
       query = query.range(from, to);
       query = query.order("id", { ascending: false });
-
 
       const { error, data, count } = await query
 
       if (error) throw error;
 
-      if (data) {
-        setRequests(data);
-        // console.log("data: ", data);
-      }
+      const statuses = await getStatus();
+      const departmentValues = await getDepartment();
+
+      // Create a map of id to description
+      const statusMap = Object.fromEntries(statuses.map(s => [s.id, s.status]));
+      const departmentMap = Object.fromEntries(departmentValues.map(d => [d.id, d.department]));
+
+      // Replace id with description in records
+      const updatedRequests = data.map(record => ({
+        ...record,
+        status: statusMap[record.status] || 'Unknown',  // Use 'Unknown' if status not found
+        department: departmentMap[record.department] || 'Unknown'
+      }));
+
+      if (data) setRequests(updatedRequests);
 
       if (count) setRequestsCount(count);
 
@@ -53,6 +63,41 @@ export function RequestsContextProvider({ children }) {
       console.log(error.error_description || error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getStatus = async () => {
+    try {
+      let query = supabase
+        .from('status')
+        .select('id,status');
+
+      const { error, data } = await query
+
+      if (error) throw error;
+      if (data) return data;
+
+    } catch (error) {
+      console.log(error.error_description || error.message);
+    }
+  };
+
+  const getDepartment = async () => {
+    try {
+      let query = supabase
+        .from('department')
+        .select('id,department');
+
+      const { error, data } = await query
+
+      if (error) throw error;
+      if (data) {
+        setDepartmentOptions(data);
+        return data;
+      }
+
+    } catch (error) {
+      console.log(error.error_description || error.message);
     }
   };
 
@@ -105,10 +150,7 @@ export function RequestsContextProvider({ children }) {
               customer: request.customer,
               assigned_to: request.assigned_to,
               department: request.department,
-              priority: request.priority,
-              status: request.status,
-              category: request.category,
-              due_date: request.due_date
+              status: request.status
             },
           ])
           .eq('id', request.id)
@@ -126,10 +168,7 @@ export function RequestsContextProvider({ children }) {
               customer: request.customer,
               assigned_to: request.assigned_to,
               department: request.department,
-              priority: request.priority,
-              status: request.status,
-              category: request.category,
-              due_date: request.due_date
+              status: request.status
             },
           ])
           .select()
@@ -159,10 +198,7 @@ export function RequestsContextProvider({ children }) {
           customer: request.customer,
           assigned_to: request.assigned_to,
           department: request.department,
-          priority: request.priority,
-          status: request.status,
-          category: request.category,
-          due_date: request.due_date
+          status: request.status
         })
         .eq("id", request.id); //matching id of row to update
 
@@ -178,26 +214,26 @@ export function RequestsContextProvider({ children }) {
     }
   };
 
-  const getDepartment = async (email) => {
-    try {
-      let query = supabase
-        .from('profiles')
-        .select('department (id,department)')
-        .eq('email', email)
-        .single();
+  // const getDepartment = async (email) => {
+  //   try {
+  //     let query = supabase
+  //       .from('profiles')
+  //       .select('department (id,department)')
+  //       .eq('email', email)
+  //       .single();
 
-      const { error, data } = await query
+  //     const { error, data } = await query
 
-      if (error) throw error;
-      if (data) {
-        // setDepartmentOptions(data);
-        return data;
-      }
+  //     if (error) throw error;
+  //     if (data) {
+  //       // setDepartmentOptions(data);
+  //       return data;
+  //     }
 
-    } catch (error) {
-      console.log(error.error_description || error.message);
-    }
-  };
+  //   } catch (error) {
+  //     console.log(error.error_description || error.message);
+  //   }
+  // };
 
   return (
     <RequestsContext.Provider

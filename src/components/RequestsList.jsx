@@ -26,11 +26,8 @@ export default function requestsTable({ email }) {
     records_description: '',
     customer: null,
     assigned_to: null,
-    department: { value: "department" },
-    priority: '',
-    status: { value: "status" },
-    category: '',
-    due_date: null
+    department: 0,
+    status: 0
   };
 
   const [requests, setRequests] = useState(null);
@@ -93,9 +90,22 @@ export default function requestsTable({ email }) {
     }
   };
 
+  const findDepartmentId = (departmentName) => {
+    const foundDepartment = departmentOptions.find(dept => dept.department === departmentName);
+    return foundDepartment ? foundDepartment.id : null; // Handle case where department is not found
+  };
+
+  const findStatusId = (statusName) => {
+    // Access the ID directly using property notation
+    return statusLookup[statusName] || null; // Handle case where status is not found
+  };
+
   const editRequest = (request) => {
     setIsEditing(true);
-    setRequest({ ...request });
+    const updatedRequest = { ...request };
+    updatedRequest.department = findDepartmentId(request.department);
+    updatedRequest.status = findStatusId(request.status);
+    setRequest(updatedRequest);
     setRequestDialog(true);
   };
 
@@ -123,19 +133,6 @@ export default function requestsTable({ email }) {
       toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Record Deleted', life: 3000 });
     }
 
-  };
-
-  const findIndexById = (id) => {
-    let index = -1;
-
-    for (let i = 0; i < requests.length; i++) {
-      if (requests[i].id === id) {
-        index = i;
-        break;
-      }
-    }
-
-    return index;
   };
 
   const exportCSV = () => {
@@ -167,8 +164,13 @@ export default function requestsTable({ email }) {
 
   const onStatusChange = (e) => {
     let _request = { ...request };
-    _request['status'] = e.value;
+    _request['status'] = statusLookup[e.value.toString()];  //statusLookup is an object, not an array. access the ID directly using property notation. .find method will not work 
     setRequest(_request);
+  };
+
+  const statusLookup = {
+    "To Dispose": 6,
+    "To Digitize": 7
   };
 
   const onInputChange = (e, name) => {
@@ -238,8 +240,6 @@ export default function requestsTable({ email }) {
       request_title: { value: '', matchMode: 'contains' },
       box_location: { value: '', matchMode: 'contains' },
       department: { value: '', matchMode: 'contains' },
-      box_content: { value: '', matchMode: 'contains' },
-      row: { value: '', matchMode: 'contains' },
       status: { value: '', matchMode: 'contains' }
     }
   });
@@ -248,7 +248,7 @@ export default function requestsTable({ email }) {
 
   useEffect(() => {
     // setRequestType(requestType);
-    fetchDepartments();
+    // fetchDepartments();
     loadLazyData();
   }, [lazyState]);
 
@@ -320,12 +320,12 @@ export default function requestsTable({ email }) {
           <Column field="records_description" header="Box Location" filter filterPlaceholder="Search" sortable style={{ minWidth: '12rem' }}></Column>
           <Column field="profiles.full_name" header="Requester" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
           <Column field="profiles2.full_name" header="Assigned To" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="department.department" header="Department" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="priority" header="Priority" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="status.status" header="Status" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          <Column field="category" header="Category" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="department" header="Department" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          <Column field="status" header="Status" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
+          {/* <Column field="priority" header="Priority" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column> */}
+          {/* <Column field="category" header="Category" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
           <Column field="due_date" header="Due Date" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
-          {/* <Column field="title" header="Request Title" sortable filter filterPlaceholder="Search" style={{ minWidth: '16rem' }}></Column>
+          <Column field="title" header="Request Title" sortable filter filterPlaceholder="Search" style={{ minWidth: '16rem' }}></Column>
           <Column field="department" header="Department" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column>
           <Column field="records_description" header="Box Content" filter filterPlaceholder="Search" sortable style={{ minWidth: '12rem' }}></Column>
           <Column field="status" header="Status" sortable filter filterPlaceholder="Search" style={{ minWidth: '12rem' }}></Column> */}
@@ -346,7 +346,7 @@ export default function requestsTable({ email }) {
 
           <div className="field">
             <label htmlFor="department" className="font-bold">
-              {isEditing ? `Department: ${request.department.department || 'No department available'}` : `Department: ${departments?.department?.department || 'No department available'}`}
+              {isEditing ? `Department: ${request.department || 'No department available'}` : `Department: ${departments?.department || 'No department available'}`}
             </label>
           </div>
 
@@ -357,7 +357,7 @@ export default function requestsTable({ email }) {
           </div>
 
           <div className="field">
-            <label htmlFor="records_description" className="font-bold">Box Content</label>
+            <label htmlFor="records_description" className="font-bold">Box Location</label>
             <InputText id="records_description" value={request.records_description} onChange={(e) => onInputChange(e, 'records_description')} required autoFocus className={classNames({ 'p-invalid': submitted && !request.records_description })} />
           </div>
 
@@ -365,11 +365,11 @@ export default function requestsTable({ email }) {
             <label className="mb-3 font-bold">Transfer to Record Center</label>
             <div className="formgrid grid">
               <div className="field-radiobutton col-6">
-                <RadioButton inputId="category2" name="category" value="To Digitize" onChange={onStatusChange} checked={request.status.status === 'To Digitize'} />
+                <RadioButton inputId="category2" name="category" value="To Digitize" onChange={onStatusChange} checked={request.status === 7} />
                 <label htmlFor="category2">To Digitize</label>
               </div>
               <div className="field-radiobutton col-6">
-                <RadioButton inputId="category3" name="category" value="To Dispose" onChange={onStatusChange} checked={request.status.status === 'To Dispose'} />
+                <RadioButton inputId="category3" name="category" value="To Dispose" onChange={onStatusChange} checked={request.status === 6} />
                 <label htmlFor="category3">To Dispose</label>
               </div>
             </div>
