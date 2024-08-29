@@ -18,7 +18,7 @@ import { RequestsContext } from "../services/RequestService";
 
 export default function requestsTable({ email }) {
 
-  const { getRequests, requestsList, requestsCount, setRequestType, getDepartment, departmentOptions, setDepartmentOptions } = useContext(RequestsContext);
+  const { getRequests, requestsList, requestsCount, setRequestType, getDepartment, departmentOptions, setDepartmentOptions, userDepartment } = useContext(RequestsContext);
 
   let emptyRequest = {
     id: null,
@@ -212,20 +212,6 @@ export default function requestsTable({ email }) {
     </div>
   );
 
-  const onRowEditComplete = (e) => {
-    let _requests = [...requests];
-    let { newData, index } = e;
-
-    _requests[index] = newData;
-
-    setRequests(_requests);
-  };
-
-  const textEditor = (options) => {
-    return <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />;
-  };
-
-
   // https://stackblitz.com/run?file=src%2Fservice%2FCustomerService.jsx,src%2FApp.jsx
   const [loading, setLoading] = useState(false);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -259,7 +245,7 @@ export default function requestsTable({ email }) {
       clearTimeout(networkTimeout);
     }
 
-    getRequests({ lazyEvent: JSON.stringify(lazyState) });
+    getRequests(email, { lazyEvent: JSON.stringify(lazyState) });
     setTotalRecords(requestsCount);
     setLoading(false);
   };
@@ -345,8 +331,11 @@ export default function requestsTable({ email }) {
           </div>
 
           <div className="field">
-            <label htmlFor="department" className="font-bold">
-              {isEditing ? `Department: ${request.department || 'No department available'}` : `Department: ${departments?.department || 'No department available'}`}
+            <label htmlFor="department" className="font-bold">Department:
+              {isEditing ? (request.department || 'No department available')
+                : (userDepartment && userDepartment[0] && userDepartment[0].department
+                  ? userDepartment[0].department.department
+                  : "No department available")}
             </label>
           </div>
 

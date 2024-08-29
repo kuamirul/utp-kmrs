@@ -14,6 +14,7 @@ export function RequestsContextProvider({ children }) {
   const [adding, setAdding] = useState(false);
   const [requestType, setRequestType] = useState("");
   const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [userDepartment, setuserDepartment] = useState([]);
 
   // https://github.com/orgs/supabase/discussions/1223
   const getPagination = (page, size) => {
@@ -25,7 +26,7 @@ export function RequestsContextProvider({ children }) {
     return { from, to }
   }
 
-  const getRequests = async () => {
+  const getRequests = async (email) => {
     const { from, to } = getPagination(first, rows);
     setLoading(true);
     try {
@@ -54,6 +55,8 @@ export function RequestsContextProvider({ children }) {
         status: statusMap[record.status] || 'Unknown',  // Use 'Unknown' if status not found
         department: departmentMap[record.department] || 'Unknown'
       }));
+
+      await getUserDepartment(email);
 
       if (data) setRequests(updatedRequests);
 
@@ -214,26 +217,26 @@ export function RequestsContextProvider({ children }) {
     }
   };
 
-  // const getDepartment = async (email) => {
-  //   try {
-  //     let query = supabase
-  //       .from('profiles')
-  //       .select('department (id,department)')
-  //       .eq('email', email)
-  //       .single();
+  const getUserDepartment = async (email) => {
+    try {
+      let query = supabase
+        .from('profiles')
+        .select('department (id,department)')
+        .eq('email', email)
+        // .single();
 
-  //     const { error, data } = await query
+      const { error, data } = await query
 
-  //     if (error) throw error;
-  //     if (data) {
-  //       // setDepartmentOptions(data);
-  //       return data;
-  //     }
+      if (error) throw error;
+      if (data) {
+        setuserDepartment(data);
+        return data;
+      }
 
-  //   } catch (error) {
-  //     console.log(error.error_description || error.message);
-  //   }
-  // };
+    } catch (error) {
+      console.log(error.error_description || error.message);
+    }
+  };
 
   return (
     <RequestsContext.Provider
@@ -253,7 +256,8 @@ export function RequestsContextProvider({ children }) {
         setRequestType,
         getDepartment,
         departmentOptions,
-        setDepartmentOptions
+        setDepartmentOptions,
+        userDepartment
       }}
     >
       {children}
