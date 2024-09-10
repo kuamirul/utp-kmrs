@@ -42,6 +42,7 @@ export default function requestsTable({ email }) {
   const dt = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
   const [departments, setDepartments] = useState([]);
+  const [departmentName, setDepartmentName] = useState(null);
 
   const openNew = () => {
     setRequest(emptyRequest);
@@ -95,6 +96,11 @@ export default function requestsTable({ email }) {
     return foundDepartment ? foundDepartment.id : null; // Handle case where department is not found
   };
 
+  const findDepartmentName = (departmentId) => {
+    const foundDepartment = departmentOptions.find(dept => dept.department === departmentId);
+    return foundDepartment ? foundDepartment.department : null; // Handle case where department is not found
+  };
+
   const findStatusId = (statusName) => {
     // Access the ID directly using property notation
     return statusLookup[statusName] || null; // Handle case where status is not found
@@ -105,6 +111,10 @@ export default function requestsTable({ email }) {
     const updatedRequest = { ...request };
     updatedRequest.department = findDepartmentId(request.department);
     updatedRequest.status = findStatusId(request.status);
+
+    const deptName = findDepartmentName(request.department);
+    setDepartmentName(deptName);
+    
     setRequest(updatedRequest);
     setRequestDialog(true);
   };
@@ -332,7 +342,7 @@ export default function requestsTable({ email }) {
 
           <div className="field">
             <label htmlFor="department" className="font-bold">Department:
-              {isEditing ? (request.department || 'No department available')
+              {isEditing ? (departmentName || 'No department available')
                 : (userDepartment && userDepartment[0] && userDepartment[0].department
                   ? userDepartment[0].department.department
                   : "No department available")}
